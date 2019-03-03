@@ -1,0 +1,25 @@
+{
+  "name": "eerie",
+  "version": "0.0.1",
+  "description": "A library that handles user authentication. Provides an API with login/register/password reset requests. Plunks in a database.",
+  "main": "eerie.js",
+  "scripts": {
+    "start": "node eerie.js",
+    "test": "xo"
+  },
+  "keywords": [
+    "API",
+    "Authentication",
+    "Login",
+    "Register"
+  ],
+  "author": "Nenad Vuletic",
+  "license": "MIT",
+  "devDependencies": {
+    "xo": "^0.24.0"
+  },
+  "dependencies": {
+    "sequelize": "^4.43.0",
+    "tedious": "^5.0.3"
+  }
+}
