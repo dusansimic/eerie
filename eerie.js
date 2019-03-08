@@ -1,45 +1,40 @@
-const Sequelize = require('sequelize');
-const sequelize = new Sequelize({
-	host: '192.168.0.17',
-	username: 'SA',
-	password: 'Trackshittaz10!',
-	dialect: 'mssql',
-	database: 'Test'
-});
+const bcrypt = require('bcryptjs');
+const Account = require('./modules/data/account');
+const methods = require('./modules/sequelize-methods');
 
-const filter = array => {
-	return {
-		before: array[0],
-		after: array[1]
+const asyncReadAll = async () => {
+	let [err, data] = await methods.findAll();
+	if (err) {
+		console.error(err);
 	}
+	let accs = [];
+	data.forEach(acc => {
+		accs.push(Account.createFromObject(acc));
+	});
+	console.log(accs);
+
+	accs.forEach(acc => {
+		let salt = bcrypt.getSalt(acc.password);
+		console.log(salt);
+	});
 };
 
-sequelize.authenticate()
-	.then(() => {
-		console.log('Connected to the database!');
-	})
-	.catch(err => {
-		console.log('Error occured while connecting');
+const asyncCreateOne = async obj => {
+	let [err, data] = await methods.create(obj);
+	if (err) {
 		console.error(err);
-	});
+	}
+	console.log(data);
+};
 
-sequelize.query('SELECT * FROM NUMBERS;')
-	.then(data => {
-		data = filter(data);
-		console.log(data);
-	})
-	.catch(err => {
-		console.log('Error occured while inserting.');
-		console.error(err);
-	});
+const newAcc = {
+	id: 'yellowboihashed',
+	username: 'yellowboi',
+	password: bcrypt.hashSync('yellowyellowyellowyellowyellowyellowyellowyellowyellowyellow', 10),
+	email: 'email@email.email',
+	createdAt: new Date(),
+	updatedAt: new Date()
+};
 
-sequelize.query('INSERT INTO NUMBERS VALUES(1337);')
-	.then(data => {
-		data = filter(data);
-		console.log(data);
-	})
-	.catch(err => {
-		console.log('Error occured while inserting.');
-		console.error(err);
-	});
-
+asyncReadAll();
+// asyncCreateOne(newAcc);
