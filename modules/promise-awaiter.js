@@ -1,7 +1,7 @@
 const awaitPromise = async promise => {
-	return await promise
+	return promise
 		.then(data => [undefined, data])
-		.catch(err => [err, undefined]);
+		.catch(error => [error, undefined]);
 };
 
 module.exports = awaitPromise;
