@@ -3,7 +3,7 @@ const path = require('path');
 const sequelize = require('./sequelize-init');
 const promiseAwaiter = require('./promise-awaiter');
 
-const Accounts = sequelize.import(path.join(__dirname, '/data/sequelizer-account'));
+const Accounts = sequelize.import(path.join(__dirname, '../data/sequelizer/sequelizer-account'));
 
 module.exports = {
 	findAll: () => promiseAwaiter(Accounts.findAll({raw: true})),

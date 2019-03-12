@@ -1,3 +1,4 @@
+const Account = require('./data/account');
 const methods = require('./modules/sequelize-methods');
 
 const asyncReadAll = async () => {
@@ -5,8 +6,13 @@ const asyncReadAll = async () => {
 	if (err) {
 		console.error(err);
 	}
-
-	console.log(data);
+	let accounts = [];
+	if (data[0]) {
+		data[0].forEach(account => {
+			accounts.push(Account.createFromObject(account));
+		});
+	}
+	console.log(accounts);
 };
 
 // Const asyncCreateOne = async obj => {

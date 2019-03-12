@@ -7,16 +7,16 @@ module.exports = (Sequelize, DataTypes) => {
 			primaryKey: true
 		},
 		username: DataTypes.STRING,
-		password: {
-			type: DataTypes.STRING,
-			set(value) {
-				this.setDataValue('password', bcrypt.hashSync(value, 10));
-			}
-		},
 		email: {
 			type: DataTypes.STRING,
 			validate: {
 				isEmail: true
+			}
+		},
+		password: {
+			type: DataTypes.STRING,
+			set(value) {
+				this.setDataValue('password', bcrypt.hashSync(value, 10));
 			}
 		},
 		role: DataTypes.INTEGER,
