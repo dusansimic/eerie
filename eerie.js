@@ -1,5 +1,3 @@
-const bcrypt = require('bcryptjs');
-const Account = require('./modules/data/account');
 const methods = require('./modules/sequelize-methods');
 
 const asyncReadAll = async () => {
@@ -8,16 +6,7 @@ const asyncReadAll = async () => {
 		console.error(err);
 	}
 
-	const accs = [];
-	data.forEach(acc => {
-		accs.push(Account.createFromObject(acc));
-	});
-	console.log(accs);
-
-	accs.forEach(acc => {
-		const salt = bcrypt.getSalt(acc.password);
-		console.log(salt);
-	});
+	console.log(data);
 };
 
 // Const asyncCreateOne = async obj => {
@@ -29,5 +18,10 @@ const asyncReadAll = async () => {
 // 	console.log(data);
 // };
 
+// AsyncCreateOne({
+// 	id: 'test_id_1',
+// 	email: 'test_email@email.email',
+// 	password: 'test'
+// });
+
 asyncReadAll();
-// AsyncCreateOne(newAcc);
