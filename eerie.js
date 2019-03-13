@@ -6,12 +6,14 @@ const asyncReadAll = async () => {
 	if (err) {
 		console.error(err);
 	}
-	let accounts = [];
+
+	const accounts = [];
 	if (data[0]) {
 		data[0].forEach(account => {
 			accounts.push(Account.createFromObject(account));
 		});
 	}
+
 	console.log(accounts);
 };
 
