@@ -28,7 +28,8 @@
   },
   "xo": {
     "rules": {
-      "max-params": "off"
+      "max-params": "off",
+      "no-return-await": "off"
     }
   }
 }

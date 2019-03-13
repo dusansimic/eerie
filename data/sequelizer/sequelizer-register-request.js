@@ -1,5 +1,5 @@
 module.exports = (Sequelize, DataTypes) => {
-	return Sequelize.define({
+	return Sequelize.define('RegisterRequest', {
 		id: {
 			type: DataTypes.STRING,
 			primaryKey: true

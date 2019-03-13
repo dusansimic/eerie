@@ -1,7 +1,6 @@
-const Account = require('./sequelizer-account');
-
 module.exports = (Sequelize, DataTypes) => {
-	return Sequelize.define({
+	const Account = Sequelize.import('./sequelizer-account');
+	return Sequelize.define('PasswordRequest', {
 		id: {
 			type: DataTypes.STRING,
 			primaryKey: true
@@ -11,6 +10,12 @@ module.exports = (Sequelize, DataTypes) => {
 			references: {
 				model: Account,
 				key: 'id'
+			}
+		},
+		ip: {
+			type: DataTypes.STRING,
+			validate: {
+				isIP: true
 			}
 		},
 		dateCreation: DataTypes.DATE,

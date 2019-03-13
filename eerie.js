@@ -1,35 +1,23 @@
-const Account = require('./data/account');
+const types = [require('./data/account'), require('./data/ban'), require('./data/ip-ban'),
+	require('./data/login-attempt'), require('./data/password-request'), require('./data/register-request')];
 const methods = require('./modules/sequelize-methods');
 
 const asyncReadAll = async () => {
-	const [err, data] = await methods.findAll();
-	if (err) {
-		console.error(err);
-	}
+	try {
+		types.forEach(async (type, index) => {
+			let data = await methods[Object.keys(methods)[index]].findAll();
+			let array = [];
+			data.forEach(obj => {
+				array.push(type.createFromObject(obj));
+			});
 
-	const accounts = [];
-	if (data[0]) {
-		data[0].forEach(account => {
-			accounts.push(Account.createFromObject(account));
+			console.log(type.name);
+			console.log(array);
 		});
+	} catch (e) {
+		console.log('Error happened : ' + e.message);
+		console.error(e);
 	}
-
-	console.log(accounts);
 };
-
-// Const asyncCreateOne = async obj => {
-// 	const [err, data] = await methods.create(obj);
-// 	if (err) {
-// 		console.error(err);
-// 	}
-//
-// 	console.log(data);
-// };
-
-// AsyncCreateOne({
-// 	id: 'test_id_1',
-// 	email: 'test_email@email.email',
-// 	password: 'test'
-// });
 
 asyncReadAll();

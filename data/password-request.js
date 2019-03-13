@@ -1,6 +1,12 @@
-function PasswordRequest(id, user, dateCreation, dateExpiry, token, createdAt, updatedAt) {
+/*
+	Password reset request is pretty self-explanatory. It will also hold new IP's,
+	and it will also notify new IP's that show up.
+ */
+
+function PasswordRequest(id, user, ip, dateCreation, dateExpiry, token, createdAt, updatedAt) {
 	this.id = id;
 	this.user = user;
+	this.ip = ip;
 	this.dateCreation = dateCreation;
 	this.dateExpiry = dateExpiry;
 	this.token = token;
@@ -10,7 +16,7 @@ function PasswordRequest(id, user, dateCreation, dateExpiry, token, createdAt, u
 
 PasswordRequest.createFromObject = json => {
 	// Same like account.js:13:13
-	return new PasswordRequest(json.id, json.user, json.dateCreation, json.dateExpiry, json.token, json.createdAt, json.updatedAt);
+	return new PasswordRequest(json.id, json.user, json.ip, json.dateCreation, json.dateExpiry, json.token, json.createdAt, json.updatedAt);
 };
 
 module.exports = PasswordRequest;

@@ -1,3 +1,8 @@
+/*
+	This is a type that describes an user account.
+	Pretty much the one thing containing the most important data when registering, logging in
+ */
+
 function Account(id, username, email, password, role, status, createdAt, updatedAt) {
 	this.id = id;
 	this.username = username;

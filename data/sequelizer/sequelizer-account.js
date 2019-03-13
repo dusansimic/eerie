@@ -1,5 +1,5 @@
 const bcrypt = require('bcryptjs');
-
+// This is pretty much the type Account, adapted for Sequelize
 module.exports = (Sequelize, DataTypes) => {
 	return Sequelize.define('Account', {
 		id: {

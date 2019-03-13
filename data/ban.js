@@ -1,3 +1,8 @@
+/*
+	Type that describes a ban, generally are served ordered by createdAt in descending order
+	Can be queried to find out whether or not an account is banned, how much does it last, from who the ban was received...
+ */
+
 function Ban(id, user, admin, reason, dateFrom, dateTo, createdAt, updatedAt) {
 	this.id = id;
 	this.user = user;

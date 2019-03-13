@@ -1,3 +1,8 @@
+/*
+	Next to a regular ban, I wanted to include an IP ban.
+	Similar to a regular one, just intended for IP's
+ */
+
 function IpBan(id, ip, admin, reason, dateFrom, dateTo, createdAt, updatedAt) {
 	this.id = id;
 	this.ip = ip;

@@ -1,7 +1,6 @@
-const Account = require('./sequelizer-account');
-
 module.exports = (Sequelize, DataTypes) => {
-	return Sequelize.define({
+	const Account = Sequelize.import('./sequelizer-account');
+	return Sequelize.define('IpBan', {
 		id: {
 			type: DataTypes.STRING,
 			primaryKey: true
