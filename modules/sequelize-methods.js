@@ -13,6 +13,9 @@ const PasswordRequests = sequelize.import(path.join(modelsFolder, 'sequelizer-pa
 const RegisterRequests = sequelize.import(path.join(modelsFolder, 'sequelizer-register-request'));
 
 module.exports = {
+	_extra: {
+		sequelize
+	},
 	account: {
 		findAll: async () => await Accounts.findAll({raw: true}),
 		findById: async id => await Accounts.findOne({

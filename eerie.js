@@ -1,23 +1,31 @@
-const types = [require('./data/account'), require('./data/ban'), require('./data/ip-ban'),
-	require('./data/login-attempt'), require('./data/password-request'), require('./data/register-request')];
-const methods = require('./modules/sequelize-methods');
+const express = require('express');
+const session = require('express-session');
 
-const asyncReadAll = async () => {
-	try {
-		types.forEach(async (type, index) => {
-			let data = await methods[Object.keys(methods)[index]].findAll();
-			let array = [];
-			data.forEach(obj => {
-				array.push(type.createFromObject(obj));
-			});
+/*
+	@deprecated me naem jeff
+ */
+function initServer() {
+	/*
+		Let's pull the methods only when the server
+	 	is actually about to be initialized
+	*/
+	const methods = require('./modules/sequelize-methods');
+	const Store = require('connect-session-sequelize')(session.Store);
 
-			console.log(type.name);
-			console.log(array);
-		});
-	} catch (e) {
-		console.log('Error happened : ' + e.message);
-		console.error(e);
-	}
-};
+	/*
+		We create the app, and add all the middleware necessary
+	 */
+	const application = express();
 
-asyncReadAll();
+	application.use(session({
+		secret: 'hello',
+		store: new Store({
+			db: methods._extra.sequelize
+		}),
+		resave: true,
+		saveUninitialized: true
+	}));
+	return application;
+}
+
+module.exports = initServer;
