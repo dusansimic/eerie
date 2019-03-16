@@ -1,9 +1,6 @@
 const express = require('express');
 const session = require('express-session');
 
-/*
-	@deprecated me naem jeff
- */
 function initServer() {
 	/*
 		Let's pull the methods only when the server
@@ -25,6 +22,10 @@ function initServer() {
 		resave: true,
 		saveUninitialized: true
 	}));
+
+	application.methods = methods;
+	console.log(application.methods);
+
 	return application;
 }
 

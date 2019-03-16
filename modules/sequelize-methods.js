@@ -1,10 +1,16 @@
 const path = require('path');
+const types = [require('../data/account'),
+	require('../data/ban'),
+	require('../data/ip-ban'),
+	require('../data/login-attempt'),
+	require('../data/password-request'),
+	require('../data/register-request')];
 
 const sequelize = require('./sequelize-init');
 
 const {Op} = sequelize;
-const modelsFolder = path.join(__dirname, '../data/sequelizer/');
 
+const modelsFolder = path.join(__dirname, '../data/sequelizer/');
 const Accounts = sequelize.import(path.join(modelsFolder, 'sequelizer-account'));
 const Bans = sequelize.import(path.join(modelsFolder, 'sequelizer-ban'));
 const IpBans = sequelize.import(path.join(modelsFolder, 'sequelizer-ip-ban'));
@@ -70,5 +76,27 @@ module.exports = {
 			order: ['createdAt', 'DESC']
 		}),
 		create: async registerRequest => await RegisterRequests.create(registerRequest)
+	},
+	test: {
+		writeAll: () => {
+			try {
+				console.log('this > ');
+				console.log(this);
+
+				types.forEach(async (type, index) => {
+					const data = await this[index].findAll();
+					const array = [];
+					data.forEach(obj => {
+						array.push(type.createFromObject(obj));
+					});
+
+					console.log(type.name);
+					console.log(array);
+				});
+			} catch (error) {
+				console.log('Error happened : ' + error.message);
+				console.error(error);
+			}
+		}
 	}
 };
