@@ -1,13 +1,12 @@
 const path = require('path');
-const types = [require('../data/account'),
-	require('../data/ban'),
-	require('../data/ip-ban'),
-	require('../data/login-attempt'),
-	require('../data/password-request'),
-	require('../data/register-request')];
+// Const types = [require('../data/account'),
+// 	require('../data/ban'),
+// 	require('../data/ip-ban'),
+// 	require('../data/login-attempt'),
+// 	require('../data/password-request'),
+// 	require('../data/register-request')];
 
 module.exports = async function () {
-
 	const sequelize = await require('./sequelize-init')();
 
 	const {Op} = sequelize;
@@ -79,7 +78,7 @@ module.exports = async function () {
 			}),
 			create: async registerRequest => await RegisterRequests.create(registerRequest)
 		}
-		// test: {
+		// Test: {
 		// 	writeAll: () => {
 		// 		try {
 		// 			types.forEach(async (type, index) => {

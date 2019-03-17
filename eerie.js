@@ -28,6 +28,4 @@ async function initServer() {
 	return application;
 }
 
-initServer();
-
-// module.exports = initServer;
+module.exports = initServer;

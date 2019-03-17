@@ -1,12 +1,13 @@
 const Tedious = require('tedious');
-const Connection = Tedious.Connection;
-const Request = Tedious.Request;
+
+const {Connection} = Tedious;
+const {Request} = Tedious;
 const env = require('./environment-variables');
 
 const config = {
 	server: env.host,
 	options: {
-		encrypt: !!env.encrypt,
+		encrypt: Boolean(env.encrypt),
 		requestTimeout: 60000
 	},
 	authentication: {
@@ -25,6 +26,7 @@ const createConnection = function () {
 			if (error) {
 				resolve(error);
 			}
+
 			console.log('Tedious connected!');
 			connection.execSql(new Request('CREATE DATABASE Authentication;', (error, rows) => {
 				if (error) {
@@ -32,9 +34,11 @@ const createConnection = function () {
 						connection.close();
 						return resolve();
 					}
+
 					resolve(error);
 					return console.log('Tedious experienced an error : ' + error.message);
 				}
+
 				console.log('Successfully created database Authentication ' + rows);
 				connection.close();
 				resolve();
