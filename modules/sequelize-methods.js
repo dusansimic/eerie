@@ -6,9 +6,7 @@ const path = require('path');
 // 	require('../data/password-request'),
 // 	require('../data/register-request')];
 
-module.exports = async function () {
-	const sequelize = await require('./sequelize-init')();
-
+module.exports = async function (sequelize) {
 	const {Op} = sequelize;
 
 	const modelsFolder = path.join(__dirname, '../data/sequelizer/');
@@ -20,9 +18,6 @@ module.exports = async function () {
 	const RegisterRequests = sequelize.import(path.join(modelsFolder, 'sequelizer-register-request'));
 
 	return {
-		_extra: {
-			sequelize
-		},
 		account: {
 			findAll: async () => await Accounts.findAll({raw: true}),
 			findById: async id => await Accounts.findOne({

@@ -7,7 +7,8 @@
     "start": "node eerie.js",
     "db-init": "node ./modules/sequelize-init.js",
     "method-init": "node ./modules/sequelize-methods.js",
-    "test": "xo && ava"
+    "test": "xo && ava",
+    "go": "node -e 'require(\"./eerie.js\")();'"
   },
   "keywords": [
     "API",
