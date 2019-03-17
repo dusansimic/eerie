@@ -1,12 +1,12 @@
 const express = require('express');
 const session = require('express-session');
 
-function initServer() {
+async function initServer() {
 	/*
 		Let's pull the methods only when the server
 	 	is actually about to be initialized
 	*/
-	const methods = require('./modules/sequelize-methods');
+	const methods = await require('./modules/sequelize-methods')();
 	const Store = require('connect-session-sequelize')(session.Store);
 
 	/*
@@ -24,9 +24,10 @@ function initServer() {
 	}));
 
 	application.methods = methods;
-	console.log(application.methods);
 
 	return application;
 }
 
-module.exports = initServer;
+initServer();
+
+// module.exports = initServer;
