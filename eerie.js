@@ -50,6 +50,7 @@ module.exports = async function () {
 		if (next) {
 			next();
 		}
+
 		logger.error('|ERROR| -> ' + err.message);
 		logger.trace(err);
 		return res.status(err.code || 500).send({
