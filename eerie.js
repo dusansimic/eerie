@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 const uuid = require('uuid');
 const morgan = require('morgan');
 
+const loggerProvider = require('./modules/logger-provider');
+
 module.exports = async function () {
 	/*
 		Let's pull the methods only when the server
@@ -18,6 +20,7 @@ module.exports = async function () {
 		We create the app, and add all the middleware necessary
 	*/
 	const application = express();
+	const logger = await loggerProvider('httpServer');
 
 	application.use(cors({
 		origin(origin, callback) {
@@ -39,6 +42,21 @@ module.exports = async function () {
 		resave: true,
 		saveUninitialized: true
 	}));
+
+	const router = await require('./modules/router-provider')(methods);
+	application.use('/', router);
+
+	application.use((err, req, res, next) => {
+		if (next) {
+			next();
+		}
+		logger.error('|ERROR| -> ' + err.message);
+		logger.trace(err);
+		return res.status(err.code || 500).send({
+			message: err.message || 'Unexpected error occured.',
+			error: err
+		});
+	});
 
 	application.methods = methods;
 	return application;
