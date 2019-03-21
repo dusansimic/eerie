@@ -10,5 +10,10 @@ module.exports = {
 	authenticationData: {
 		username: process.env.EERIE_AUTH_USERNAME,
 		password: process.env.EERIE_AUTH_PASSWORD
+	},
+	redis: {
+		host: process.env.EERIE_REDIS_HOST,
+		ssl: process.env.EERIE_REDIS_SSL,
+		password: process.env.EERIE_REDIS_PASSWORD
 	}
 };
