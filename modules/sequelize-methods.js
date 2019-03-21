@@ -1,10 +1,4 @@
 const path = require('path');
-// Const types = [require('../data/account'),
-// 	require('../data/ban'),
-// 	require('../data/ip-ban'),
-// 	require('../data/login-attempt'),
-// 	require('../data/password-request'),
-// 	require('../data/register-request')];
 
 module.exports = async function (sequelize) {
 	const {Op} = sequelize;
@@ -18,6 +12,15 @@ module.exports = async function (sequelize) {
 	const RegisterRequests = sequelize.import(path.join(modelsFolder, 'sequelizer-register-request'));
 
 	return {
+		_extra: {
+			sequelize,
+			Accounts,
+			Bans,
+			IpBans,
+			LoginAttempts,
+			PasswordRequests,
+			RegisterRequests
+		},
 		account: {
 			findAll: async () => await Accounts.findAll({raw: true}),
 			findById: async id => await Accounts.findOne({
@@ -73,24 +76,5 @@ module.exports = async function (sequelize) {
 			}),
 			create: async registerRequest => await RegisterRequests.create(registerRequest)
 		}
-		// Test: {
-		// 	writeAll: () => {
-		// 		try {
-		// 			types.forEach(async (type, index) => {
-		// 				const data = await this[index].findAll();
-		// 				const array = [];
-		// 				data.forEach(obj => {
-		// 					array.push(type.createFromObject(obj));
-		// 				});
-		//
-		// 				console.log(type.name);
-		// 				console.log(array);
-		// 			});
-		// 		} catch (error) {
-		// 			console.log('Error happened : ' + error.message);
-		// 			console.error(error);
-		// 		}
-		// 	}
-		// }
 	};
 };

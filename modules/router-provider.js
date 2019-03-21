@@ -4,6 +4,7 @@ const RedisStore = require('rate-limit-redis');
 const Redis = require('ioredis');
 const Chance = require('chance');
 
+const filters = require('./router-filters');
 const env = require('./environment-variables');
 
 module.exports = async function (methods) {
@@ -39,7 +40,7 @@ module.exports = async function (methods) {
 		skipSuccessfulRequests: true
 	});
 
-	router.post('/login', loginLimiter, async (req, res, next) => {
+	router.post('/login', loginLimiter, filters.filterLogin, async (req, res, next) => {
 		try {
 			/*
 				Need to filter out req.body
@@ -51,7 +52,6 @@ module.exports = async function (methods) {
 			if (!account) {
 				return next({code: 404, message: 'The username/email you entered, does not exist!'});
 			}
-
 			return res.status(200).send({
 				account
 			});
@@ -64,7 +64,7 @@ module.exports = async function (methods) {
 		return next(new Error('This request is not implemented!'));
 	});
 
-	router.use((error, req, res, _$next) => {
+	router.use((error, req, res, _) => {
 		/*
 			The default error handler!
 			Something to write into logs,
