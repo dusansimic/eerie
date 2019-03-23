@@ -3,6 +3,7 @@
 // Later will be adapted with database info, email options...
 
 module.exports = {
+	debug: process.env.EERIE_DEBUG,
 	databaseType: process.env.EERIE_DATABASE,
 	host: process.env.EERIE_HOST,
 	encrypt: process.env.EERIE_ENCRYPT || null,

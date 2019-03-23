@@ -9,7 +9,8 @@ module.exports = (Sequelize, DataTypes) => {
 			type: DataTypes.STRING,
 			validate: {
 				isIP: true
-			}
+			},
+			defaultValue: '127.0.0.1'
 		},
 		admin: {
 			type: DataTypes.STRING,

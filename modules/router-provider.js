@@ -7,10 +7,35 @@ module.exports = async function (methods) {
 	const router = express.Router(); // eslint-disable-line new-cap
 	const logger = await require('./logger-provider')('authenticationRouter');
 
+	router.use((req, res, next) => {
+		/*
+			We want to log any requests that have finished
+			This is where the object is created
+			And also, saved to the database.
+		 */
+		res.on('finish', () => {
+			let ip = req.connection.remoteAddress.substring(req.connection.remoteAddress.lastIndexOf(':') + 1);
+			if (ip.split('.').length !== 4) {
+				ip = '127.0.0.1';
+			}
+			let requestEntry = {
+				ip,
+				requestPath: req.path,
+				date: new Date(),
+				statusCode: res.statusCode
+			};
+			if (req.session.token) {
+				requestEntry.accountId = req.session.token.identification;
+			}
+			// console.log(requestEntry);
+			methods.requests.create(requestEntry);
+		});
+		next();
+	});
+
 	router.post('/login', limiters.limitLogin, filters.filterLogin, async (req, res, next) => {
 		try {
 			/*
-				Need to filter out req.body
 				Check provided identification
 				And then, if it exists, calculate the comboHash
 				And compare it with the one provided

@@ -6,41 +6,33 @@
 	Also block injections, I guess...
  */
 
-const bodyContains = (body, fields) => {
+// This is a general function, should be used in all/alot of the filters
+const bodyContains = (body, fields, next) => {
 	if (Object.keys(body).length !== fields.length) {
-		return {code: 400, message: 'The body you sent is not properly formatted.'};
+		return next({code: 400, message: 'The body you sent is not properly formatted.'});
 	}
 	fields.forEach(key => {
 		if (!body[key]) {
-			return {code: 400, message: 'The body you sent is not properly formatted.'};
+			return next({code: 400, message: 'The body you sent is not properly formatted.'});
 		}
 	});
-	return null;
 };
 
-const checkType = (value, type) => {
+// This is a function that will be used always, to check if the field is the proper type
+const checkType = (value, type, next) => {
 	if (typeof value !== type) {
-		return {code: 400, message: 'One of the fields provided is not the proper type.'};
+		return next({code: 400, message: 'One of the fields provided is not the proper type.'});
 	}
-	return null;
 };
 
 const filterLogin = (req, res, next) => {
-	let bodyContaining = bodyContains(req.body, ['identification', 'password']);
-	if (bodyContaining) {
-		return next(bodyContaining);
-	}
-	let identificationString = checkType(req.body.identification, String);
-	if (identificationString) {
-		return next(identificationString);
-	}
-	let passwordString = checkType(req.body.password, String);
-	if (passwordString) {
-		return next(passwordString);
-	}
+	bodyContains(req.body, ['identification', 'password'], next);
+	checkType(req.body.identification, 'string', next);
+	checkType(req.body.password, 'string', next);
 	return next();
 };
 
 module.exports = {
+	// Here I will list all the filters
 	filterLogin
 };

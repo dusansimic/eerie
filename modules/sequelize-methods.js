@@ -10,16 +10,18 @@ module.exports = async function (sequelize) {
 	const LoginAttempts = sequelize.import(path.join(modelsFolder, 'sequelizer-login-attempt'));
 	const PasswordRequests = sequelize.import(path.join(modelsFolder, 'sequelizer-password-request'));
 	const RegisterRequests = sequelize.import(path.join(modelsFolder, 'sequelizer-register-request'));
+	const Requests = sequelize.import(path.join(modelsFolder, 'sequelizer-requests'));
 
 	return {
-		_extra: {
+		extra: {
 			sequelize,
 			Accounts,
 			Bans,
 			IpBans,
 			LoginAttempts,
 			PasswordRequests,
-			RegisterRequests
+			RegisterRequests,
+			Requests
 		},
 		account: {
 			findAll: async () => await Accounts.findAll({raw: true}),
@@ -75,6 +77,18 @@ module.exports = async function (sequelize) {
 				order: ['createdAt', 'DESC']
 			}),
 			create: async registerRequest => await RegisterRequests.create(registerRequest)
+		},
+		requests: {
+			findAll: async () => await Requests.findAll({raw: true}),
+			findByIp: async ip => await Requests.findAll({
+				where: {ip},
+				order: ['createdAt', 'DESC']
+			}),
+			findByAccountId: async id => await Requests.findAll({
+				where: {accountId: id},
+				order: ['createdAt', 'DESC']
+			}),
+			create: async request => await Requests.create(request)
 		}
 	};
 };
