@@ -1,46 +1,13 @@
 const express = require('express');
-const rateLimiter = require('express-rate-limit');
-const RedisStore = require('rate-limit-redis');
-const Redis = require('ioredis');
-const Chance = require('chance');
 
 const filters = require('./router-filters');
-const env = require('./environment-variables');
+const limiters = require('./router-limiters');
 
 module.exports = async function (methods) {
 	const router = express.Router(); // eslint-disable-line new-cap
 	const logger = await require('./logger-provider')('authenticationRouter');
-	const chance = new Chance();
 
-	const redisConfig = {
-		host: env.redis.host,
-		password: env.redis.password
-	};
-
-	if (env.redis.ssl) {
-		redisConfig.tls = true;
-		redisConfig.port = 6380;
-	} else {
-		redisConfig.port = 6379;
-	}
-
-	const client = new Redis(redisConfig);
-
-	// Instance keyword, want to have some first name, just to see some nice names
-	const instanceKeyword = chance.first({gender: 'female'});
-	logger.debug('Instance Keyword: ' + instanceKeyword);
-
-	const loginLimiter = rateLimiter({
-		store: new RedisStore({
-			client
-		}),
-		windowMs: 1000 * 60 * 15,
-		max: 3,
-		message: 'Too much logins recently, try again later.',
-		skipSuccessfulRequests: true
-	});
-
-	router.post('/login', loginLimiter, filters.filterLogin, async (req, res, next) => {
+	router.post('/login', limiters.limitLogin, filters.filterLogin, async (req, res, next) => {
 		try {
 			/*
 				Need to filter out req.body
