@@ -19,30 +19,28 @@ module.exports = async config => {
 	const windowMs = config.debug ? 1 : 1000 * 60 * 15;
 	const max = config.debug ? 100000000 : 3;
 
-	const limitLogin = rateLimiter({
-		store: new RedisStore({
-			client: config.redis
-		}),
-		// Random max appeared!
-		max,
-		windowMs,
-		message: 'Too much login requests recently, try again later.',
-		skipSuccessfulRequests: true
-	});
+	const createConfig = message => {
+		return {
+			store: new RedisStore({
+				client: config.redis
+			}),
+			max,
+			windowMs,
+			message,
+			skipSuccessfulRequests: true
+		}
+	};
 
-	const limitRegister = rateLimiter({
-		store: new RedisStore({
-			client: config.redis
-		}),
-		max,
-		windowMs,
-		message: 'Too much register requests recently, try again later.',
-		skipSuccessfulRequests: true
-	});
+	const limitLogin = rateLimiter(createConfig('Too much login requests recently, try again later.'));
+	const limitRegisterTokenCreate = rateLimiter(createConfig('Too much register token create requests recently, try again later.'));
+	const limitRegisterTokenCheck = rateLimiter(createConfig('Too much register token check requests recently, try again later.'));
+	const limitRegisterFinish = rateLimiter(createConfig('Too much register finish requests recently, try again later.'));
 
 	// Here I will list all the limiters
 	return {
 		limitLogin,
-		limitRegister
+		limitRegisterTokenCreate,
+		limitRegisterTokenCheck,
+		limitRegisterFinish
 	};
 };

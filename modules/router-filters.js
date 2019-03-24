@@ -33,8 +33,22 @@ const filterLogin = (req, res, next) => {
 	return next();
 };
 
-const filterRegister = (req, res, next) => {
-	bodyContains(req.body, ['username', 'password'], next);
+const filterRegisterTokenCreate = (req, res, next) => {
+	bodyContains(req.body, ['email', 'role'], next);
+	checkType(req.body.email, 'string', next);
+	checkType(req.body.role, 'number', next);
+	return next();
+};
+
+const filterRegisterTokenCheck = (req, res, next) => {
+	bodyContains(req.body, ['token'], next);
+	checkType(req.body.token, 'string', next);
+	return next();
+};
+
+const filterRegisterFinish = (req, res, next) => {
+	bodyContains(req.body, ['token', 'username', 'password'], next);
+	checkType(req.body.token, 'string', next);
 	checkType(req.body.username, 'string', next);
 	checkType(req.body.password, 'string', next);
 	return next();
@@ -43,5 +57,7 @@ const filterRegister = (req, res, next) => {
 module.exports = {
 	// Here I will list all the filters
 	filterLogin,
-	filterRegister
+	filterRegisterTokenCreate,
+	filterRegisterTokenCheck,
+	filterRegisterFinish
 };

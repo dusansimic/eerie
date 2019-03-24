@@ -60,6 +60,9 @@ module.exports = async function (sequelize) {
 		},
 		registerRequests: {
 			findAll: async () => await RegisterRequests.findAll({raw: true}),
+			findByToken: async token => await RegisterRequests.findOne({
+				where: {token}
+			}),
 			findByEmail: async email => await RegisterRequests.findAll({
 				where: {email},
 				order: ['createdAt', 'DESC']

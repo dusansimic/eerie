@@ -182,7 +182,7 @@ module.exports = async function (methods, config) {
 		Third, when you know it's still valid, provide the other necessary data
 		And the account is created.
 	 */
-	router.post('/register/token', async (req, res, next) => {
+	router.post('/register/token', limiters.limitRegisterTokenCreate, filters.filterRegisterTokenCreate, async (req, res, next) => {
 		try {
 			/*
 				If the config says that no roles can be created by the role -1.
@@ -190,23 +190,25 @@ module.exports = async function (methods, config) {
 			 */
 			if (config.options.rolesCreateRoles[-1] && !req.account) {
 				return next({code: 403, message: 'You are not logged in!'});
-			}
-			if (!config.options.rolesCreateRoles[req.account.role]) {
+			} else if (!config.options.rolesCreateRoles[req.account.role]) {
 				return next({code: 403, message: 'You are not permitted to create an account!'});
+			} else if (!config.options.rolesCreateRoles[req.account.role].includes(req.body.role)) {
+				return next({code: 403, message: 'You are not permitted to create an account with that role!'});
 			}
 
+			let role = req.account.role;
 			let roles = config.options.rolesCreateRoles[req.account.role];
 
 			return res.status(200).send({
-				role: req.account.role,
-				roles: roles
+				role,
+				roles
 			});
 		} catch (error) {
 			return next(error);
 		}
 	});
 
-	router.post('/register/final', limiters.limitRegister, filters.filterRegister, async (req, res, next) => {
+	router.post('/register/valid', limiters.limitRegisterTokenCheck, filters.filterRegisterTokenCheck, async (req, res, next) => {
 		try {
 			/*
 				If the option to login after register is enabled
@@ -218,25 +220,52 @@ module.exports = async function (methods, config) {
 				}
 			}
 
-			const object = {
-				username: req.body.username,
-				password: req.body.password
-			};
-
-			const account = await methods.account.create(Account.createFromObject(object));
-			if (!account) {
-				return next({code: 400, message: 'Account was not created!'});
+			const request = await methods.registerRequests.findByToken(req.body.token);
+			if (!request) {
+				return next({code: 404, message: 'The token you provided does not exist!'});
 			}
 
-			if (config.options.loginAfterRegister) {
-				req.session.token = {
-					id: account.id,
-					password: account.password
-				};
-			}
+			// if (config.options.loginAfterRegister) {
+			// 	req.session.token = {
+			// 		id: account.id,
+			// 		password: account.password
+			// 	};
+			// }
 
 			return res.status(200).send({
-				account
+				request
+			});
+		} catch (error) {
+			return next(error);
+		}
+	});
+
+	router.post('/register/final', limiters.limitRegisterFinish, filters.filterRegisterFinish, async (req, res, next) => {
+		try {
+			/*
+				If the option to login after register is enabled
+				Need to check if it is logged in
+			 */
+			if (config.options.loginAfterRegister) {
+				if (req.session.token) {
+					return next({code: 401, message: 'You are already logged in!'});
+				}
+			}
+
+			const request = await methods.registerRequests.findByToken(req.body.token);
+			if (!request) {
+				return next({code: 404, message: 'The token you provided does not exist!'});
+			}
+
+			// if (config.options.loginAfterRegister) {
+			// 	req.session.token = {
+			// 		id: account.id,
+			// 		password: account.password
+			// 	};
+			// }
+
+			return res.status(200).send({
+				request
 			});
 		} catch (error) {
 			return next(error);
