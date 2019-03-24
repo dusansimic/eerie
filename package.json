@@ -26,7 +26,7 @@
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.18.3",
     "chance": "^1.0.18",
-    "connect-session-sequelize": "^6.0.0",
+    "connect-redis": "^3.4.1",
     "cors": "^2.8.5",
     "express": "^4.16.4",
     "express-rate-limit": "^3.4.0",

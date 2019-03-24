@@ -5,11 +5,13 @@ const limiters = require('./router-limiters');
 const env = require('./environment-variables');
 
 module.exports = async function (methods) {
+
 	/*
 		Initializing the router
 		We'll also create a debugUser for when debug mode is on
 		You can login without any users in the database
 	 */
+
 	const router = express.Router(); // eslint-disable-line new-cap
 	const logger = await require('./logger-provider')('authenticationRouter');
 
@@ -25,12 +27,11 @@ module.exports = async function (methods) {
 		logger.debug(debugUser);
 	}
 
+	/*
+		We're checking if the user is already logged in.
+		If it is, we need to check if the password is still the same.
+	 */
 	router.use(async (req, res, next) => {
-
-		/*
-			We're checking if the user is already logged in.
-			If it is, we need to check if the password is still the same.
-		 */
 		if (req.session.token) {
 			/*
 				Query the database for the user
@@ -38,12 +39,19 @@ module.exports = async function (methods) {
 			 */
 			if (req.session.token.identification === debugUser.identification &&
 					req.session.token.password === debugUser.password) {
+				/*
+			 		We will return next here, and the event won't be triggered.
+			 		We can't quite database a request for an account that exists
+			 		In the context of only one instance
+				  */
 				return next();
 			}
 
 			const account = await methods.account.findByIdentification(req.session.token.identification);
-			// No more account -> The account has been deleted
-			// If the password is changed -> Just logging out previous sessions
+			/*
+				No more account -> The account has been deleted
+				If the password is changed -> Just logging out previous sessions
+			 */
 			if (!account || (req.session.token.password !== account.password)) {
 				delete req.session.token;
 				return next({code: 401, message: 'You have been logged out!'});
@@ -56,7 +64,11 @@ module.exports = async function (methods) {
 			And also, saved to the database.
 		 */
 		res.on('finish', () => {
-			let ip = req.connection.remoteAddress.substring(req.connection.remoteAddress.lastIndexOf(':') + 1);
+			/*
+				Gathering the ip, and creating the object ready to put into the database.
+			 */
+			let ip = req.connection.remoteAddress;
+			ip = ip.substring(ip.lastIndexOf(':') + 1);
 			if (ip.split('.').length !== 4) {
 				ip = '127.0.0.1';
 			}

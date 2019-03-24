@@ -1,11 +1,14 @@
 const express = require('express');
 const session = require('express-session');
+const Redis = require('ioredis');
+const RedisStore = require('connect-redis')(session);
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const uuid = require('uuid');
 const morgan = require('morgan');
 
 const loggerProvider = require('./modules/logger-provider');
+const env = require('./modules/environment-variables');
 
 module.exports = async function () {
 	/*
@@ -14,7 +17,6 @@ module.exports = async function () {
 	*/
 	const sequelize = await require('./modules/sequelize-init')();
 	const methods = await require('./modules/sequelize-methods')(sequelize);
-	const SequelizeStore = require('connect-session-sequelize')(session.Store);
 
 	/*
 		We create the app, and add all the middleware necessary
@@ -33,11 +35,25 @@ module.exports = async function () {
 
 	application.use(morgan('dev'));
 
+	const redisConfig = {
+		host: env.redis.host,
+		password: env.redis.password
+	};
+
+	if (env.redis.ssl) {
+		redisConfig.tls = true;
+		redisConfig.port = 6380;
+	} else {
+		redisConfig.port = 6379;
+	}
+
+	const client = new Redis(redisConfig);
+
 	application.use(session({
 		reqid: () => uuid(),
 		secret: 'hello',
-		store: new SequelizeStore({
-			db: sequelize
+		store: new RedisStore({
+			client
 		}),
 		resave: true,
 		saveUninitialized: true
