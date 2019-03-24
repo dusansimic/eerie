@@ -6,17 +6,21 @@
 
 module.exports = {
 	debug: process.env.EERIE_DEBUG,
+	secret: process.env.EERIE_SESSION_SECRET,
 	options: {
+		rolesThatCanCreateToken: process.env.EERIE_TOKEN_CREATE_ROLES,
 		loginAfterRegister: process.env.EERIE_LOGIN_AFTER_REGISTER,
 		passwordMethod: process.env.EERIE_PASSWORD_METHOD
 	},
-	databaseType: process.env.EERIE_DATABASE,
-	host: process.env.EERIE_HOST,
-	encrypt: process.env.EERIE_ENCRYPT || null,
-	initial: process.env.EERIE_INITIAL,
-	authenticationData: {
-		username: process.env.EERIE_AUTH_USERNAME,
-		password: process.env.EERIE_AUTH_PASSWORD
+	sequelize: {
+		databaseType: process.env.EERIE_DATABASE,
+		host: process.env.EERIE_HOST,
+		encrypt: process.env.EERIE_ENCRYPT || null,
+		initial: process.env.EERIE_INITIAL,
+		authenticationData: {
+			username: process.env.EERIE_AUTH_USERNAME,
+			password: process.env.EERIE_AUTH_PASSWORD
+		}
 	},
 	redis: {
 		host: process.env.EERIE_REDIS_HOST,

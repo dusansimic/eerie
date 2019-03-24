@@ -14,54 +14,35 @@ const rateLimiter = require('express-rate-limit');
  */
 
 const RedisStore = require('rate-limit-redis');
-const Redis = require('ioredis');
 
-const env = require('./environment-variables');
+module.exports = async config => {
+	const windowMs = config.debug ? 1 : 1000 * 60 * 15;
+	const max = config.debug ? 100000000 : 3;
 
-const redisConfig = {
-	host: env.redis.host,
-	password: env.redis.password
-};
+	const limitLogin = rateLimiter({
+		store: new RedisStore({
+			client: config.redis
+		}),
+		// Random max appeared!
+		max,
+		windowMs,
+		message: 'Too much login requests recently, try again later.',
+		skipSuccessfulRequests: true
+	});
 
-if (env.redis.ssl) {
-	redisConfig.tls = true;
-	redisConfig.port = 6380;
-} else {
-	redisConfig.port = 6379;
-}
+	const limitRegister = rateLimiter({
+		store: new RedisStore({
+			client: config.redis
+		}),
+		max,
+		windowMs,
+		message: 'Too much register requests recently, try again later.',
+		skipSuccessfulRequests: true
+	});
 
-const client = new Redis(redisConfig);
-
-const windowMs = 1000 * 60 * 15;
-
-let max = 3;
-if (env.debug) {
-	max = 10000000;
-}
-
-const limitLogin = rateLimiter({
-	store: new RedisStore({
-		client
-	}),
-	// Random max appeared!
-	max,
-	windowMs,
-	message: 'Too much logins recently, try again later.',
-	skipSuccessfulRequests: true
-});
-
-const limitRegister = rateLimiter({
-	store: new RedisStore({
-		client
-	}),
-	max,
-	windowMs,
-	message: 'Too much registers recently, try again later.',
-	skipSuccessfulRequests: true
-});
-
-module.exports = {
 	// Here I will list all the limiters
-	limitLogin,
-	limitRegister
+	return {
+		limitLogin,
+		limitRegister
+	};
 };

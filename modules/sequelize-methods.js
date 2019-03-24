@@ -12,17 +12,9 @@ module.exports = async function (sequelize) {
 	const RegisterRequests = sequelize.import(path.join(modelsFolder, 'sequelizer-register-request'));
 	const Requests = sequelize.import(path.join(modelsFolder, 'sequelizer-requests'));
 
+	sequelize.sync();
+
 	return {
-		extra: {
-			sequelize,
-			Accounts,
-			Bans,
-			IpBans,
-			LoginAttempts,
-			PasswordRequests,
-			RegisterRequests,
-			Requests
-		},
 		account: {
 			findAll: async () => await Accounts.findAll({raw: true}),
 			findById: async id => await Accounts.findOne({

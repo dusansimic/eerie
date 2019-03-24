@@ -15,6 +15,10 @@ module.exports = (Sequelize, DataTypes) => {
 				isEmail: true
 			}
 		},
+		role: {
+			type: DataTypes.INTEGER,
+			defaultValue: 0
+		},
 		dateCreation: DataTypes.DATE,
 		dateExpiry: DataTypes.DATE,
 		token: DataTypes.STRING

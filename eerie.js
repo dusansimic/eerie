@@ -1,6 +1,5 @@
 const express = require('express');
 const session = require('express-session');
-const Redis = require('ioredis');
 const RedisStore = require('connect-redis')(session);
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -8,22 +7,26 @@ const uuid = require('uuid');
 const morgan = require('morgan');
 
 const loggerProvider = require('./modules/logger-provider');
-const env = require('./modules/environment-variables');
 
-module.exports = async function () {
-	/*
-		Let's pull the methods only when the server
-	 	is actually about to be initialized
-	*/
-	const sequelize = await require('./modules/sequelize-init')();
-	const methods = await require('./modules/sequelize-methods')(sequelize);
+module.exports = async function (config) {
 
 	/*
-		We create the app, and add all the middleware necessary
-	*/
-	const application = express();
+		Initializing some basics to create the server.
+		If there is also something wrong with the config, throw an Error
+	 */
 	const logger = await loggerProvider('httpServer');
+	await require('./modules/config-analyzer')(config);
 
+	const application = express();
+
+	/*
+		All the middleware necessary
+		First, the church of cross origin requests
+		Second, the land of json-s
+		Third, the tale teller Morgan
+		Fourth, the everyone's whisperer
+		And fifth, the router who connects everyone...
+	*/
 	application.use(cors({
 		origin(origin, callback) {
 			callback(null, true);
@@ -33,33 +36,22 @@ module.exports = async function () {
 
 	application.use(bodyParser.json());
 
-	application.use(morgan('dev'));
-
-	const redisConfig = {
-		host: env.redis.host,
-		password: env.redis.password
-	};
-
-	if (env.redis.ssl) {
-		redisConfig.tls = true;
-		redisConfig.port = 6380;
-	} else {
-		redisConfig.port = 6379;
+	if (config.debug) {
+		application.use(morgan('dev'));
 	}
 
-	const client = new Redis(redisConfig);
-
 	application.use(session({
-		reqid: () => uuid(),
-		secret: 'hello',
+		reqid: uuid,
+		secret: config.secret,
 		store: new RedisStore({
-			client
+			client: config.redis
 		}),
 		resave: true,
 		saveUninitialized: true
 	}));
 
-	const router = await require('./modules/router-provider')(methods);
+	const methods = await require('./modules/sequelize-methods')(config.sequelize);
+	const router = await require('./modules/router-provider')(methods, config);
 	application.use('/', router);
 
 	application.use((err, req, res, next) => {
@@ -75,6 +67,5 @@ module.exports = async function () {
 		});
 	});
 
-	application.methods = methods;
 	return application;
 };
