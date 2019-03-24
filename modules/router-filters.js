@@ -11,6 +11,7 @@ const bodyContains = (body, fields, next) => {
 	if (Object.keys(body).length !== fields.length) {
 		return next({code: 400, message: 'The body you sent is not properly formatted.'});
 	}
+
 	fields.forEach(key => {
 		if (!body[key]) {
 			return next({code: 400, message: 'The body you sent is not properly formatted.'});
@@ -32,7 +33,15 @@ const filterLogin = (req, res, next) => {
 	return next();
 };
 
+const filterRegister = (req, res, next) => {
+	bodyContains(req.body, ['username', 'password'], next);
+	checkType(req.body.username, 'string', next);
+	checkType(req.body.password, 'string', next);
+	return next();
+};
+
 module.exports = {
 	// Here I will list all the filters
-	filterLogin
+	filterLogin,
+	filterRegister
 };

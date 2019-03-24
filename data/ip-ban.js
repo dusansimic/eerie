@@ -2,9 +2,10 @@
 	Next to a regular ban, I wanted to include an IP ban.
 	Similar to a regular one, just intended for IP's
  */
+const methods = require('./sequelizer/sequelizer-method');
 
 function IpBan(id, ip, admin, reason, dateFrom, dateTo, createdAt, updatedAt) {
-	this.id = id;
+	this.id = id || methods.objectId();
 	this.ip = ip;
 	this.admin = admin;
 	this.reason = reason;

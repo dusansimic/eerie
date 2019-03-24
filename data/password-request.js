@@ -2,9 +2,10 @@
 	Password reset request is pretty self-explanatory. It will also hold new IP's,
 	and it will also notify new IP's that show up.
  */
+const methods = require('./sequelizer/sequelizer-method');
 
 function PasswordRequest(id, user, ip, dateCreation, dateExpiry, token, createdAt, updatedAt) {
-	this.id = id;
+	this.id = id || methods.objectId();
 	this.user = user;
 	this.ip = ip;
 	this.dateCreation = dateCreation;

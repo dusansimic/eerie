@@ -1,8 +1,13 @@
+const methods = require('./sequelizer-method');
+
 module.exports = (Sequelize, DataTypes) => {
 	return Sequelize.define('RegisterRequest', {
 		id: {
 			type: DataTypes.STRING,
-			primaryKey: true
+			primaryKey: true,
+			set(value) {
+				this.setDataValue('id', value || methods.objectId());
+			}
 		},
 		email: {
 			type: DataTypes.STRING,

@@ -84,3 +84,4 @@ typings/
 
 # JetBrains Idea files
 .idea/
+env-script.js

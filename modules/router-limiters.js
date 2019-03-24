@@ -32,6 +32,8 @@ if (env.redis.ssl) {
 
 const client = new Redis(redisConfig);
 
+const windowMs = 1000 * 60 * 15;
+
 let max = 3;
 if (env.debug) {
 	max = 10000000;
@@ -43,12 +45,23 @@ const limitLogin = rateLimiter({
 	}),
 	// Random max appeared!
 	max,
-	windowMs: 1000 * 60 * 15,
+	windowMs,
 	message: 'Too much logins recently, try again later.',
+	skipSuccessfulRequests: true
+});
+
+const limitRegister = rateLimiter({
+	store: new RedisStore({
+		client
+	}),
+	max,
+	windowMs,
+	message: 'Too much registers recently, try again later.',
 	skipSuccessfulRequests: true
 });
 
 module.exports = {
 	// Here I will list all the limiters
-	limitLogin
+	limitLogin,
+	limitRegister
 };

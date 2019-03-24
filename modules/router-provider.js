@@ -1,17 +1,18 @@
 const express = require('express');
+const crypto = require('crypto');
+
+const Account = require('../data/account');
 
 const filters = require('./router-filters');
 const limiters = require('./router-limiters');
 const env = require('./environment-variables');
 
 module.exports = async function (methods) {
-
 	/*
 		Initializing the router
 		We'll also create a debugUser for when debug mode is on
 		You can login without any users in the database
 	 */
-
 	const router = express.Router(); // eslint-disable-line new-cap
 	const logger = await require('./logger-provider')('authenticationRouter');
 
@@ -20,7 +21,7 @@ module.exports = async function (methods) {
 		const Chance = require('chance');
 		const chance = new Chance();
 		debugUser = {
-			identification: chance.first({gender: 'female'}),
+			id: chance.first({gender: 'female'}),
 			password: chance.last()
 		};
 		logger.debug('debugUser initiated: ');
@@ -33,12 +34,13 @@ module.exports = async function (methods) {
 	 */
 	router.use(async (req, res, next) => {
 		if (req.session.token) {
+
 			/*
 				Query the database for the user
 				Or check if the user matches the debugUser
 			 */
-			if (req.session.token.identification === debugUser.identification &&
-					req.session.token.password === debugUser.password) {
+			if (req.session.token.id === debugUser.id &&
+				req.session.token.password === debugUser.password) {
 				/*
 			 		We will return next here, and the event won't be triggered.
 			 		We can't quite database a request for an account that exists
@@ -47,14 +49,30 @@ module.exports = async function (methods) {
 				return next();
 			}
 
-			const account = await methods.account.findByIdentification(req.session.token.identification);
+			const account = await methods.account.findById(req.session.token.id);
+
 			/*
 				No more account -> The account has been deleted
 				If the password is changed -> Just logging out previous sessions
 			 */
-			if (!account || (req.session.token.password !== account.password)) {
+			if (!account) {
 				delete req.session.token;
 				return next({code: 401, message: 'You have been logged out!'});
+			}
+
+			switch (env.options.passwordMethod) {
+				case 'SHA256':
+					if (req.session.token.password !== account.password) {
+						delete req.session.token;
+						return next({code: 401, message: 'You have been logged out!'});
+					}
+					break;
+				case 'bcrypt':
+					if (!bcrypt.compareSync(req.session.token.password, account.password)) {
+						delete req.session.token;
+						return next({code: 401, message: 'You have been logged out!'});
+					}
+					break;
 			}
 		}
 
@@ -72,16 +90,18 @@ module.exports = async function (methods) {
 			if (ip.split('.').length !== 4) {
 				ip = '127.0.0.1';
 			}
-			let requestEntry = {
+
+			const requestEntry = {
 				ip,
 				requestPath: req.path,
 				date: new Date(),
 				statusCode: res.statusCode
 			};
-			if (req.session.token && (req.session.token.identification !== debugUser.identification)) {
-				requestEntry.accountId = req.session.token.identification;
+			if (req.session.token && (req.session.token.id !== debugUser.id)) {
+				requestEntry.accountId = req.session.token.id;
 			}
-			// console.log(requestEntry);
+
+			// Console.log(requestEntry);
 			methods.requests.create(requestEntry);
 		});
 		return next();
@@ -100,10 +120,9 @@ module.exports = async function (methods) {
 				Debug mode login
 				Made for testing
 			 */
-
-			if (env.debug && (req.body.identification === debugUser.identification && req.body.password === debugUser.password)) {
+			if (env.debug && (req.body.identification === debugUser.id && req.body.password === debugUser.password)) {
 				req.session.token = {
-					identification: debugUser.identification,
+					id: debugUser.id,
 					password: debugUser.password
 				};
 				return res.status(200).send({
@@ -121,13 +140,68 @@ module.exports = async function (methods) {
 			if (!account) {
 				return next({code: 404, message: 'The username/email you entered, does not exist!'});
 			}
-			if (req.body.password !== account.password) {
-				return next({code: 400, message: 'The password you entered, is not correct!'});
+
+			switch (env.options.passwordMethod) {
+				case 'SHA256':
+					if (req.body.password !== account.password &&
+						(crypto.createHash('sha256').update(req.body.password, 'utf8').digest('hex') !== account.password)) {
+						return next({code: 400, message: 'The password you entered, is not correct!'});
+					}
+					break;
+				case 'bcrypt':
+					if (!bcrypt.compareSync(req.body.password, account.password)) {
+						return next({code: 400, message: 'The password you entered, is not correct!'});
+					}
+					break;
 			}
+
 			req.session.token = {
-				identification: account.id,
+				id: account.id,
 				password: account.password
 			};
+
+			return res.status(200).send({
+				account
+			});
+		} catch (error) {
+			return next(error);
+		}
+	});
+
+	/*
+		TODO Remove this before final
+		This is a HTTP request that will create a user purely from
+		The data provided, placed in req.body
+	 */
+	router.post('/register', limiters.limitRegister, filters.filterRegister, async (req, res, next) => {
+		try {
+			/*
+				If the option to login after register is enabled
+				Need to check if it is logged in
+			 */
+			if (env.options.loginAfterRegister) {
+				if (req.session.token) {
+					return next({code: 401, message: 'You are already logged in!'});
+				}
+			}
+
+			let object = {
+				username: req.body.username,
+				password: req.body.password
+			};
+
+			const account = await methods.account.create(Account.createFromObject(object));
+			if (!account) {
+				return next({code: 400, message: 'Account was not created!'});
+			}
+
+			if (env.options.loginAfterRegister) {
+				req.session.token = {
+					id: account.id,
+					password: account.password
+				};
+			}
+
 			return res.status(200).send({
 				account
 			});
@@ -155,12 +229,9 @@ module.exports = async function (methods) {
 		Can be used to see as who you are logged in.
 		(For now, but will be used to provide users data)
 	 */
-	router.get('/me', async (req, res, next) => {
+	router.get('/me', async (req, res, _) => {
 		return res.status(200).send({
-			account: {
-				identification: req.session.token.identification,
-				password: req.session.token.password
-			}
+			account: req.session.token
 		});
 	});
 
@@ -168,7 +239,7 @@ module.exports = async function (methods) {
 		This requests has no filters, and no data will be used.
 		Just to clear the token
 	 */
-	router.post('/logout', async (req, res, next) => {
+	router.post('/logout', async (req, res, _) => {
 		delete req.session.token;
 		return res.status(200).send({
 			message: 'You have successfully logged out!'
@@ -176,7 +247,7 @@ module.exports = async function (methods) {
 	});
 
 	/*
-	 	router.get('/test/notImplemented', async (req, res, next) => {
+	 	Router.get('/test/notImplemented', async (req, res, next) => {
 	  		return next(new Error('This request is not implemented!'));
 	 	});
 	*/

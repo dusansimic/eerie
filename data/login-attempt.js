@@ -3,9 +3,10 @@
 	This one will be straight for login, as one of three places an account can be touched without being logged in.
 	Can be queried to see which IP's were attempting to access the account
  */
+const methods = require('./sequelizer/sequelizer-method');
 
 function LoginAttempt(id, user, ip, success, createdAt, updatedAt) {
-	this.id = id;
+	this.id = id || methods.objectId();
 	this.user = user;
 	this.ip = ip;
 	this.success = success;

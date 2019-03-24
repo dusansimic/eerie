@@ -2,9 +2,10 @@
 	This is a type that describes an user account.
 	Pretty much the one thing containing the most important data when registering, logging in
  */
+const methods = require('./sequelizer/sequelizer-method');
 
 function Account(id, username, email, password, role, status, createdAt, updatedAt) {
-	this.id = id;
+	this.id = id || methods.objectId();
 	this.username = username;
 	this.email = email;
 	this.password = password;

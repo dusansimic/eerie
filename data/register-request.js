@@ -2,9 +2,10 @@
 	This one will start creation of a new account, via email
 	Will also store the 'first' IP, the one you won't get an email about, just because you created an account from it.
  */
+const methods = require('./sequelizer/sequelizer-method');
 
 function RegisterRequest(id, email, ip, dateCreation, dateExpiry, token, createdAt, updatedAt) {
-	this.id = id;
+	this.id = id || methods.objectId();
 	this.email = email;
 	this.ip = ip;
 	this.dateCreation = dateCreation;

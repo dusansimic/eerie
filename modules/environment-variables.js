@@ -1,9 +1,15 @@
-// Need to drag in some basic data
-// Necessary for Sequelize initialization
-// Later will be adapted with database info, email options...
+/*
+	Need to drag in some basic data
+	Necessary for Sequelize initialization
+	Later will be adapted with database info, email options...
+ */
 
 module.exports = {
 	debug: process.env.EERIE_DEBUG,
+	options: {
+		loginAfterRegister: process.env.EERIE_LOGIN_AFTER_REGISTER,
+		passwordMethod: process.env.EERIE_PASSWORD_METHOD
+	},
 	databaseType: process.env.EERIE_DATABASE,
 	host: process.env.EERIE_HOST,
 	encrypt: process.env.EERIE_ENCRYPT || null,
