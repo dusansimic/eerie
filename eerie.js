@@ -9,7 +9,6 @@ const morgan = require('morgan');
 const loggerProvider = require('./modules/logger-provider');
 
 module.exports = async function (config) {
-
 	/*
 		Initializing some basics to create the server.
 		If there is also something wrong with the config, throw an Error

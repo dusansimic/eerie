@@ -2,8 +2,6 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const express = require('express');
 
-const Account = require('../data/account');
-
 module.exports = async function (methods, config) {
 	/*
 		Initializing the router
@@ -190,14 +188,18 @@ module.exports = async function (methods, config) {
 			 */
 			if (config.options.rolesCreateRoles[-1] && !req.account) {
 				return next({code: 403, message: 'You are not logged in!'});
-			} else if (!config.options.rolesCreateRoles[req.account.role]) {
+			}
+
+			if (!config.options.rolesCreateRoles[req.account.role]) {
 				return next({code: 403, message: 'You are not permitted to create an account!'});
-			} else if (!config.options.rolesCreateRoles[req.account.role].includes(req.body.role)) {
+			}
+
+			if (!config.options.rolesCreateRoles[req.account.role].includes(req.body.role)) {
 				return next({code: 403, message: 'You are not permitted to create an account with that role!'});
 			}
 
-			let role = req.account.role;
-			let roles = config.options.rolesCreateRoles[req.account.role];
+			const {role} = req.account;
+			const roles = config.options.rolesCreateRoles[req.account.role];
 
 			return res.status(200).send({
 				role,
@@ -225,7 +227,7 @@ module.exports = async function (methods, config) {
 				return next({code: 404, message: 'The token you provided does not exist!'});
 			}
 
-			// if (config.options.loginAfterRegister) {
+			// If (config.options.loginAfterRegister) {
 			// 	req.session.token = {
 			// 		id: account.id,
 			// 		password: account.password
@@ -257,7 +259,7 @@ module.exports = async function (methods, config) {
 				return next({code: 404, message: 'The token you provided does not exist!'});
 			}
 
-			// if (config.options.loginAfterRegister) {
+			// If (config.options.loginAfterRegister) {
 			// 	req.session.token = {
 			// 		id: account.id,
 			// 		password: account.password

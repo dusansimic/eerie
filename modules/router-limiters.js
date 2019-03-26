@@ -28,7 +28,7 @@ module.exports = async config => {
 			windowMs,
 			message,
 			skipSuccessfulRequests: true
-		}
+		};
 	};
 
 	const limitLogin = rateLimiter(createConfig('Too much login requests recently, try again later.'));

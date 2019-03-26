@@ -11,14 +11,14 @@ const routine = async function () {
 		And the sequelize/mongoose connection, and redis connection
 	 */
 	const server = await require('./eerie')({
-		debug: Boolean(env.debug),
+		debug: env.debug,
 		secret: env.secret,
 		options: {
 			rolesCreateRoles: {
-				0: [0, 1],
-				1: [0]
+				1: [0],
+				666: [1, 0]
 			},
-			loginAfterRegister: Boolean(env.options.loginAfterRegister),
+			loginAfterRegister: env.options.loginAfterRegister,
 			passwordMethod: env.options.passwordMethod
 		},
 		sequelize: new Sequelize({
@@ -28,14 +28,14 @@ const routine = async function () {
 			dialect: env.sequelize.databaseType,
 			database: env.sequelize.initial,
 			dialectOptions: {
-				encrypt: Boolean(env.sequelize.encrypt)
+				encrypt: env.sequelize.encrypt
 			}
 		}),
 		redis: new Redis({
 			host: env.redis.host,
 			password: env.redis.password,
 			port: env.redis.ssl ? 6380 : 6379,
-			tls: Boolean(env.redis.ssl)
+			tls: env.redis.ssl
 		})
 	});
 
