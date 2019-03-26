@@ -45,4 +45,7 @@ const routine = async function () {
 	});
 };
 
-routine();
+routine()
+	.then(() => {
+		console.log('Application started.');
+	});
