@@ -121,7 +121,7 @@ describe('server testing', function () {
 					logger.trace(err);
 					return done(err);
 				}
-				logger.debug('Login response : ');
+				logger.debug('Login response body : ');
 				logger.debug(res.body);
 				done();
 			});
@@ -144,7 +144,7 @@ describe('server testing', function () {
 					return done('Received a cookie, where I should already have one!');
 				}
 				logger.debug('Didn\'t get a new cookie, which is good!');
-				logger.debug('Response body');
+				logger.debug('Response body : ');
 				logger.debug(res.body);
 				done();
 			});

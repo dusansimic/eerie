@@ -95,6 +95,7 @@ module.exports = async function (methods, config) {
 				return next({code: 401, message: 'You have been logged out!'});
 			}
 
+			logger.debug(config.options.passwordMethod);
 			switch (config.options.passwordMethod) {
 				case 'SHA256':
 					if (req.session.token.password !== account.password) {
@@ -112,6 +113,24 @@ module.exports = async function (methods, config) {
 					break;
 				default:
 					throw new Error('You haven\'t specified a password hashing method!');
+			}
+
+			const ban = await methods.bans.findByUser(account.id);
+			if (ban) {
+				const json = ban.dataValues;
+				const now = new Date();
+
+				if (json.dateFrom.getTime() <= now.getTime() && json.dateTo.getTime() >= now.getTime()) {
+					if (req.session.token) {
+						delete req.session.token;
+					}
+
+					return next({code: 403, message: 'Your account was banned.', ban: {
+						reason: json.reason,
+						dateFrom: json.dateFrom,
+						dateTo: json.dateTo
+					}});
+				}
 			}
 
 			req.account = account;
@@ -212,6 +231,30 @@ module.exports = async function (methods, config) {
 					loginAttempt.success = false;
 					await methods.loginAttempts.create(LoginAttempt.createFromObject(loginAttempt));
 					return next({code: 400, message: 'The password you entered, is not correct!'});
+				}
+			}
+
+			/*
+				Account can't be banned and let you to login
+			 */
+			const ban = await methods.bans.findByUser(account.id);
+			if (ban) {
+				const json = ban.dataValues;
+				const now = new Date();
+
+				if (json.dateFrom.getTime() <= now.getTime() && json.dateTo.getTime() >= now.getTime()) {
+					if (req.session.token) {
+						delete req.session.token;
+					}
+
+					loginAttempt.user = account.id;
+					loginAttempt.success = false;
+					await methods.loginAttempts.create(LoginAttempt.createFromObject(loginAttempt));
+					return next({code: 403, message: 'Your account was banned.', ban: {
+						reason: json.reason,
+						dateFrom: json.dateFrom,
+						dateTo: json.dateTo
+					}});
 				}
 			}
 

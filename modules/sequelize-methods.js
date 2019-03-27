@@ -28,7 +28,7 @@ module.exports = async function (sequelize) {
 		},
 		bans: {
 			findAll: async () => await Bans.findAll({raw: true}),
-			findByUser: async id => await Bans.findAll({
+			findByUser: async id => await Bans.findOne({
 				where: {user: id},
 				order: [['createdAt', 'DESC']]
 			}),

@@ -1,8 +1,6 @@
 const Sequelize = require('sequelize');
 const Redis = require('ioredis');
 
-// Const IpBan = require('./data/ip-ban');
-
 const eerie = require('./eerie');
 const env = require('./modules/environment-variables');
 
@@ -50,17 +48,6 @@ const routine = async function () {
 	server.listen(port, () => {
 		logger.info('Server is running on ' + port + '.');
 	});
-
-	/*
-		Const ipBan = {
-			ip: '188.2.39.182',
-			admin: '5c97a28549149030295ca54e',
-			reason: 'testing',
-			dateFrom: new Date(),
-			dateTo: new Date(2019, 4, 1)
-		};
-		server.methods.ipBans.create(IpBan.createFromObject(ipBan));
-	 */
 };
 
 routine()
