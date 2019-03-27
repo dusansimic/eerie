@@ -15,7 +15,8 @@ module.exports = (Sequelize, DataTypes) => {
 			references: {
 				model: Account,
 				key: 'id'
-			}
+			},
+			allowNull: true
 		},
 		ip: {
 			type: DataTypes.STRING,

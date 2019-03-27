@@ -53,6 +53,7 @@ module.exports = async function (config) {
 	const router = await require('./modules/router-provider')(methods, config);
 
 	application.debugUser = router.debugUser;
+	application.methods = methods;
 
 	application.use('/', router);
 

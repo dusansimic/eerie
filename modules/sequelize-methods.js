@@ -30,7 +30,7 @@ module.exports = async function (sequelize) {
 			findAll: async () => await Bans.findAll({raw: true}),
 			findByUser: async id => await Bans.findAll({
 				where: {user: id},
-				order: ['createdAt', 'DESC']
+				order: [['createdAt', 'DESC']]
 			}),
 			create: async ban => await Bans.create(ban)
 		},
@@ -38,7 +38,7 @@ module.exports = async function (sequelize) {
 			findAll: async () => await IpBans.findAll({raw: true}),
 			findByIp: async ip => await IpBans.findOne({
 				where: {ip},
-				order: ['createdAt', 'DESC']
+				order: [['createdAt', 'DESC']]
 			}),
 			create: async ipBan => await IpBans.create(ipBan)
 		},
@@ -46,7 +46,7 @@ module.exports = async function (sequelize) {
 			findAll: async () => await LoginAttempts.findAll({raw: true}),
 			findByUser: async id => await LoginAttempts.findAll({
 				where: {user: id},
-				order: ['createdAt', 'DESC']
+				order: [['createdAt', 'DESC']]
 			}),
 			create: async loginAttempt => await LoginAttempts.create(loginAttempt)
 		},
@@ -54,7 +54,7 @@ module.exports = async function (sequelize) {
 			findAll: async () => await PasswordRequests.findAll({raw: true}),
 			findByUser: async id => await PasswordRequests.findAll({
 				where: {user: id},
-				order: ['createdAt', 'DESC']
+				order: [['createdAt', 'DESC']]
 			}),
 			create: async passwordRequest => await PasswordRequests.create(passwordRequest)
 		},
@@ -65,11 +65,11 @@ module.exports = async function (sequelize) {
 			}),
 			findByEmail: async email => await RegisterRequests.findAll({
 				where: {email},
-				order: ['createdAt', 'DESC']
+				order: [['createdAt', 'DESC']]
 			}),
 			findByIp: async ip => await RegisterRequests.findAll({
 				where: {ip},
-				order: ['createdAt', 'DESC']
+				order: [['createdAt', 'DESC']]
 			}),
 			create: async registerRequest => await RegisterRequests.create(registerRequest)
 		},
@@ -77,11 +77,11 @@ module.exports = async function (sequelize) {
 			findAll: async () => await Requests.findAll({raw: true}),
 			findByIp: async ip => await Requests.findAll({
 				where: {ip},
-				order: ['createdAt', 'DESC']
+				order: [['createdAt', 'DESC']]
 			}),
 			findByAccountId: async id => await Requests.findAll({
 				where: {accountId: id},
-				order: ['createdAt', 'DESC']
+				order: [['createdAt', 'DESC']]
 			}),
 			create: async request => await Requests.create(request)
 		}

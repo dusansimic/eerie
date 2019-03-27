@@ -2,6 +2,8 @@ const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
 const express = require('express');
 
+const LoginAttempt = require('../data/login-attempt');
+
 module.exports = async function (methods, config) {
 	/*
 		Initializing the router
@@ -33,6 +35,39 @@ module.exports = async function (methods, config) {
 		If it is, we need to check if the password is still the same.
 	 */
 	router.use(async (req, res, next) => {
+		/*
+			Gathering the ip, and creating the object ready to put into the database.
+		 */
+		let ip = req.connection.remoteAddress;
+		ip = ip.substring(ip.lastIndexOf(':') + 1);
+		if (ip.split('.').length !== 4) {
+			ip = '127.0.0.1';
+		}
+
+		/*
+			Check with ipBans, if the IP is banned.
+		 */
+		const ipBan = await methods.ipBans.findByIp(ip);
+		if (ipBan) {
+			const json = ipBan.dataValues;
+			const now = new Date();
+
+			if (json.dateFrom.getTime() <= now.getTime() && json.dateTo.getTime() >= now.getTime()) {
+				if (req.session.token) {
+					delete req.session.token;
+				}
+
+				return next({code: 403, message: 'Your IP address was banned.', ipBan: {
+					ip: json.ip,
+					reason: json.reason,
+					dateFrom: json.dateFrom,
+					dateTo: json.dateTo
+				}});
+			}
+		}
+
+		req.ip = ip;
+
 		if (req.session.token) {
 			/*
 				Query the database for the user
@@ -89,15 +124,6 @@ module.exports = async function (methods, config) {
 		 */
 		res.on('finish', () => {
 			/*
-				Gathering the ip, and creating the object ready to put into the database.
-			 */
-			let ip = req.connection.remoteAddress;
-			ip = ip.substring(ip.lastIndexOf(':') + 1);
-			if (ip.split('.').length !== 4) {
-				ip = '127.0.0.1';
-			}
-
-			/*
 				Creating the object to place into the database
 			 */
 			const requestEntry = {
@@ -125,6 +151,10 @@ module.exports = async function (methods, config) {
 				return next({code: 401, message: 'You are already logged in!'});
 			}
 
+			const loginAttempt = {
+				ip: req.ip
+			};
+
 			/*
 				Debug mode login
 				Made for testing
@@ -134,6 +164,13 @@ module.exports = async function (methods, config) {
 					id: debugUser.id,
 					password: debugUser.password
 				};
+				/*
+					If there appears to be a null/true loginAttempt
+					That means someone logged in as a debug user.
+				 */
+				loginAttempt.user = null;
+				loginAttempt.success = true;
+				await methods.loginAttempts.create(LoginAttempt.createFromObject(loginAttempt));
 				return res.status(200).send({
 					account: debugUser,
 					message: 'Logged in as debug user.'
@@ -147,16 +184,33 @@ module.exports = async function (methods, config) {
 			*/
 			const account = await methods.account.findByIdentification(req.body.identification);
 			if (!account) {
+				/*
+					If there appears to be a null/false loginAttempt
+					That means someone tried to login as a non existing user.
+				 */
+				loginAttempt.user = null;
+				loginAttempt.success = false;
+				await methods.loginAttempts.create(LoginAttempt.createFromObject(loginAttempt));
 				return next({code: 404, message: 'The username/email you entered, does not exist!'});
 			}
 
 			if (config.options.passwordMethod === 'SHA256') {
 				if (req.body.password !== account.password &&
 					(crypto.createHash('sha256').update(req.body.password, 'utf8').digest('hex') !== account.password)) {
+					/*
+						If there appears to be a id/false loginAttempt
+						That means someone tried to login, but entered a wrong password.
+					 */
+					loginAttempt.user = account.id;
+					loginAttempt.success = false;
+					await methods.loginAttempts.create(LoginAttempt.createFromObject(loginAttempt));
 					return next({code: 400, message: 'The password you entered, is not correct!'});
 				}
 			} else if (config.options.passwordMethod === 'bcrypt') {
 				if (!bcrypt.compareSync(req.body.password, account.password)) {
+					loginAttempt.user = account.id;
+					loginAttempt.success = false;
+					await methods.loginAttempts.create(LoginAttempt.createFromObject(loginAttempt));
 					return next({code: 400, message: 'The password you entered, is not correct!'});
 				}
 			}
@@ -165,6 +219,14 @@ module.exports = async function (methods, config) {
 				id: account.id,
 				password: account.password
 			};
+
+			/*
+				If there appears to be a id/true loginAttempt
+				That means someone tried to login and did so.
+			 */
+			loginAttempt.user = account.id;
+			loginAttempt.success = true;
+			await methods.loginAttempts.create(LoginAttempt.createFromObject(loginAttempt));
 
 			return res.status(200).send({
 				account
