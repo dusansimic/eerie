@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node eerie.js",
     "test": "xo && mocha",
-    "go": "node listen.js"
+    "go": "node listen.js",
+    "sloc": "sloc --exclude node_modules ."
   },
   "keywords": [
     "API",
