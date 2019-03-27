@@ -25,6 +25,7 @@ module.exports = async function (methods, config) {
 		};
 		logger.debug('debugUser initiated: ');
 		logger.debug(debugUser);
+		router.debugUser = debugUser;
 	}
 
 	/*

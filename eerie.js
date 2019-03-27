@@ -51,6 +51,9 @@ module.exports = async function (config) {
 
 	const methods = await require('./modules/sequelize-methods')(config.sequelize);
 	const router = await require('./modules/router-provider')(methods, config);
+
+	application.debugUser = router.debugUser;
+
 	application.use('/', router);
 
 	application.use((err, req, res, next) => {
