@@ -33,12 +33,15 @@ const routine = async function () {
 		debug: env.debug,
 		secret: env.secret,
 		options: {
-			rolesCreateRoles: {
-				1: [0],
-				666: [1, 0]
+			roles: {
+				// defaultRole: 0,
+				adminRoles: [1],
+				rolesCreateRoles: {
+					1: [0]
+				},
 			},
 			loginAfterRegister: env.options.loginAfterRegister,
-			passwordMethod: env.options.passwordMethod
+			passwordMethod: env.options.passwordMethod,
 		},
 		sequelize,
 		redis

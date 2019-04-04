@@ -7,8 +7,8 @@
  */
 
 // This is a general function, should be used in all/alot of the filters
-const bodyContains = (body, fields, next) => {
-	if (Object.keys(body).length !== fields.length) {
+const bodyContains = (body, fields, next, strict = true) => {
+	if (strict && Object.keys(body).length !== fields.length) {
 		return next({code: 400, message: 'The body you sent is not properly formatted.'});
 	}
 
@@ -41,13 +41,13 @@ const filterRegisterTokenCreate = (req, res, next) => {
 };
 
 const filterRegisterTokenCheck = (req, res, next) => {
-	bodyContains(req.body, ['token'], next);
+	bodyContains(req.body, ['token'], false, next);
 	checkType(req.body.token, 'string', next);
 	return next();
 };
 
 const filterRegisterFinish = (req, res, next) => {
-	bodyContains(req.body, ['token', 'username', 'password'], next);
+	bodyContains(req.body, ['token', 'username', 'password'], false, next);
 	checkType(req.body.token, 'string', next);
 	checkType(req.body.username, 'string', next);
 	checkType(req.body.password, 'string', next);

@@ -23,10 +23,10 @@ module.exports = async config => {
 	}
 
 	/*
-		TODO Analyze the rolesCreateRoles part
+		TODO Analyze the 'roles' part
 	 */
-	if (typeof config.options.rolesCreateRoles !== 'object') {
-		throw new TypeError('config.options.rolesCreateRoles must be object type');
+	if (typeof config.options.roles !== 'object') {
+		throw new TypeError('config.options.roles must be object type');
 	}
 
 	switch (config.options.passwordMethod) {
