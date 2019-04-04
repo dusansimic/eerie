@@ -152,4 +152,10 @@ describe('server testing', function () {
 				done();
 			});
 	});
+
+	after('stop tests', () => {
+		setTimeout(() => {
+			process.exit(0);
+		}, 2000);
+	});
 });

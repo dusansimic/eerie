@@ -9,6 +9,9 @@
     "go": "node listen.js",
     "sloc": "sloc --exclude node_modules ."
   },
+  "pre-commit": [
+    "test"
+  ],
   "keywords": [
     "API",
     "Authentication",
@@ -19,6 +22,7 @@
   "license": "MIT",
   "devDependencies": {
     "mocha": "^6.0.2",
+    "pre-commit": "^1.2.2",
     "supertest": "^4.0.2",
     "xo": "^0.24.0"
   },
