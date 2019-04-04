@@ -1,5 +1,4 @@
 module.exports = config => {
-
 	/*
 		Config map
 		roles: {
@@ -21,16 +20,15 @@ module.exports = config => {
 				And on which roles can create which roles.
 				Check right away, if non-logged-in users are at all able to create accounts.
 			 */
-			if (config.roles.defaultValue && !req.account) {
-				return next({code: 403, message: 'You are not logged in!'});
-			}
 
-			let role = null;
-			let roles = null;
+			const data = {};
+
+			console.log(req.account);
+			console.log(config.options.roles);
 
 			if (req.account) {
-				role = req.account.role;
-				roles = config.options.rolesCreateRoles[role];
+				const {role} = req.account;
+				const roles = config.options.roles.rolesCreateRoles[role];
 
 				if (!roles) {
 					return next({code: 403, message: 'You are not permitted to create an account!'});
@@ -39,11 +37,22 @@ module.exports = config => {
 				if (!roles.includes(req.body.role)) {
 					return next({code: 403, message: 'You are not permitted to create an account with that role!'});
 				}
+
+				data.role = req.body.role;
+			} else {
+				if (config.options.roles.defaultValue) {
+					return next({code: 403, message: 'You are not logged in!'});
+				}
+
+				if (!config.options.roles.defaultRole) {
+					throw new Error('DefaultRole is not set!');
+				}
+
+				data.role = config.options.roles.defaultRole;
 			}
 
 			return res.status(200).send({
-				role,
-				roles
+				data
 			});
 		} catch (error) {
 			return next(error);

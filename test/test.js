@@ -29,7 +29,7 @@ const config = {
 	secret: env.secret,
 	options: {
 		roles: {
-			// defaultRole: 0,
+			// DefaultRole: 0,
 			adminRoles: [1],
 			rolesCreateRoles: {
 				1: [0]

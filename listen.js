@@ -34,14 +34,14 @@ const routine = async function () {
 		secret: env.secret,
 		options: {
 			roles: {
-				// defaultRole: 0,
+				// DefaultRole: 0,
 				adminRoles: [1],
 				rolesCreateRoles: {
 					1: [0]
-				},
+				}
 			},
 			loginAfterRegister: env.options.loginAfterRegister,
-			passwordMethod: env.options.passwordMethod,
+			passwordMethod: env.options.passwordMethod
 		},
 		sequelize,
 		redis
