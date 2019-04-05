@@ -176,7 +176,7 @@ module.exports = async function (methods, config) {
 		Third, when you know it's still valid, provide the other necessary data
 		And the account is created.
 	 */
-	const registerTokenMethod = require('./routes/register-token')(config);
+	const registerTokenMethod = require('./routes/register-token')(methods, config);
 	router.post('/register/token', limiters.limitRegisterTokenCreate, filters.filterRegisterTokenCreate, registerTokenMethod);
 
 	const registerValidMethod = require('./routes/register-valid')(methods, config);

@@ -25,5 +25,12 @@ module.exports = {
 		host: process.env.EERIE_REDIS_HOST,
 		ssl: Boolean(process.env.EERIE_REDIS_SSL),
 		password: process.env.EERIE_REDIS_PASSWORD
+	},
+	nodemailer: {
+		service: process.env.EERIE_MAILER_SERVICE,
+		host: process.env.EERIE_MAILER_HOST,
+		port: process.env.EERIE_MAILER_PORT,
+		username: process.env.EERIE_MAILER_AUTH_USERNAME,
+		password: process.env.EERIE_MAILER_AUTH_PASSWORD
 	}
 };

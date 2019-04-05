@@ -6,52 +6,68 @@
 	Also block injections, I guess...
  */
 
+const HttpError = require('./http-error');
+
 // This is a general function, should be used in all/alot of the filters
-const bodyContains = (body, fields, next, strict = true) => {
+const bodyContains = (body, fields, strict = true) => {
 	if (strict && Object.keys(body).length !== fields.length) {
-		return next({code: 400, message: 'The body you sent is not properly formatted.'});
+		throw new HttpError('The body you sent is not properly formatted.', 400);
 	}
 
-	fields.forEach(key => {
-		if (!body[key]) {
-			return next({code: 400, message: 'The body you sent is not properly formatted.'});
-		}
-	});
+	const hasKeys = fields.filter(key => Object.prototype.hasOwnProperty.call(body, key));
+	if (hasKeys.length !== fields.length) {
+		throw new HttpError('The body you sent is not properly formatted.', 400);
+	}
 };
 
 // This is a function that will be used always, to check if the field is the proper type
-const checkType = (value, type, next) => {
+const checkType = (value, type) => {
 	if (typeof value !== type) {
-		return next({code: 400, message: 'One of the fields provided is not the proper type.'});
+		throw new HttpError('One of the fields provided is not the proper type.', 400);
 	}
 };
 
 const filterLogin = (req, res, next) => {
-	bodyContains(req.body, ['identification', 'password'], next);
-	checkType(req.body.identification, 'string', next);
-	checkType(req.body.password, 'string', next);
-	return next();
+	try {
+		bodyContains(req.body, ['identification', 'password']);
+		checkType(req.body.identification, 'string');
+		checkType(req.body.password, 'string');
+		return next();
+	} catch (error) {
+		return next(error);
+	}
 };
 
 const filterRegisterTokenCreate = (req, res, next) => {
-	bodyContains(req.body, ['email', 'role'], next);
-	checkType(req.body.email, 'string', next);
-	checkType(req.body.role, 'number', next);
-	return next();
+	try {
+		bodyContains(req.body, ['email'], false);
+		checkType(req.body.email, 'string');
+		return next();
+	} catch (error) {
+		return next(error);
+	}
 };
 
 const filterRegisterTokenCheck = (req, res, next) => {
-	bodyContains(req.body, ['token'], false, next);
-	checkType(req.body.token, 'string', next);
-	return next();
+	try {
+		bodyContains(req.body, ['token'], false);
+		checkType(req.body.token, 'string');
+		return next();
+	} catch (error) {
+		return next(error);
+	}
 };
 
 const filterRegisterFinish = (req, res, next) => {
-	bodyContains(req.body, ['token', 'username', 'password'], false, next);
-	checkType(req.body.token, 'string', next);
-	checkType(req.body.username, 'string', next);
-	checkType(req.body.password, 'string', next);
-	return next();
+	try {
+		bodyContains(req.body, ['token', 'username', 'password'], false);
+		checkType(req.body.token, 'string');
+		checkType(req.body.username, 'string');
+		checkType(req.body.password, 'string');
+		return next();
+	} catch (error) {
+		return next(error);
+	}
 };
 
 module.exports = {

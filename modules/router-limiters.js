@@ -18,12 +18,13 @@ const RedisStore = require('rate-limit-redis');
 module.exports = async config => {
 	const windowMs = config.debug ? 1 : 1000 * 60 * 15;
 	const max = config.debug ? 100000000 : 3;
+	const store = new RedisStore({
+		client: config.redis
+	});
 
 	const createConfig = message => {
 		return {
-			store: new RedisStore({
-				client: config.redis
-			}),
+			store,
 			max,
 			windowMs,
 			message,
