@@ -27,6 +27,14 @@ const checkType = (value, type) => {
 	}
 };
 
+const regex = /^(([^<>()[\].,;:\s@"]+(\.[^<>()[\].,;:\s@"]+)*)|(".+"))@(([^<>()[\].,;:\s@"]+\.)+[^<>()[\].,;:\s@"]{2,})$/;
+
+const email = value => {
+	if (!regex.test(value)) {
+		throw new HttpError('You didn\'t provide an email address.', 400);
+	}
+};
+
 const filterLogin = (req, res, next) => {
 	try {
 		bodyContains(req.body, ['identification', 'password']);
@@ -41,6 +49,7 @@ const filterLogin = (req, res, next) => {
 const filterRegisterTokenCreate = (req, res, next) => {
 	try {
 		bodyContains(req.body, ['email'], false);
+		email(req.body.email);
 		checkType(req.body.email, 'string');
 		return next();
 	} catch (error) {

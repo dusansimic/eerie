@@ -54,9 +54,9 @@ const routine = async function () {
 		transporterConfig.port = env.nodemailer.port;
 	}
 
-	logger.debug(transporterConfig.auth);
+	// Logger.debug(transporterConfig.auth);
 
-	const transporter = nodemailer.createTestAccount(transporterConfig);
+	const transporter = nodemailer.createTransport(transporterConfig);
 
 	const server = await eerie({
 		debug: env.debug,

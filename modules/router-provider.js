@@ -1,5 +1,8 @@
+const path = require('path');
 const bcrypt = require('bcryptjs');
 const express = require('express');
+
+const {pugEngine} = require('nodemailer-pug-engine');
 
 module.exports = async function (methods, config) {
 	/*
@@ -13,6 +16,11 @@ module.exports = async function (methods, config) {
 	const filters = require('./router-filters');
 	const limiters = await require('./router-limiters')(config);
 
+	config.transporter.use('compile', pugEngine({
+		templateDir: path.join(__dirname, '../templates'),
+		pretty: true
+	}));
+
 	let debugUser = null;
 	let isDebugUser = null;
 
@@ -23,8 +31,8 @@ module.exports = async function (methods, config) {
 			id: chance.first({gender: 'female'}),
 			password: chance.last()
 		};
-		logger.debug('debugUser initiated: ');
-		logger.debug(debugUser);
+		// Logger.debug('debugUser initiated: ');
+		// Logger.debug(debugUser);
 		router.debugUser = debugUser;
 
 		isDebugUser = (identification, password) => {
@@ -184,6 +192,20 @@ module.exports = async function (methods, config) {
 
 	const registerFinalMethod = require('./routes/register-final')(methods, config);
 	router.post('/register/final', limiters.limitRegisterFinish, filters.filterRegisterFinish, registerFinalMethod);
+
+	if (config.debug) {
+		router.get('/debug', async (req, res, _) => {
+			const auth = await config.transporter.options.auth;
+
+			return res.render('debug', {
+				debugUser: config.debugUser,
+				emailUser: {
+					user: auth.user,
+					pass: auth.pass
+				}
+			});
+		});
+	}
 
 	router.use(async (req, res, next) => {
 		/*

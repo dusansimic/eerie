@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const session = require('express-session');
 const RedisStore = require('connect-redis')(session);
@@ -17,6 +18,9 @@ module.exports = async function (config) {
 	await require('./modules/config-analyzer')(config);
 
 	const application = express();
+
+	application.set('views', path.join(__dirname, 'views'));
+	application.set('view engine', 'pug');
 
 	/*
 		All the middleware necessary

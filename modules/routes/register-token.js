@@ -25,9 +25,6 @@ module.exports = (methods, config) => {
 
 			const data = {};
 
-			console.log(req.account);
-			console.log(config.options.roles);
-
 			if (req.account) {
 				if (config.isDebugUser(req.account.id, req.account.password)) {
 					data.role = req.body.role || 0;
@@ -53,12 +50,23 @@ module.exports = (methods, config) => {
 				data.role = config.options.roles.defaultRole;
 			}
 
-			console.log(config.transporter);
+			const value = await config.transporter.sendMail({
+				to: req.body.email,
+				template: 'register',
+				ctx: {
+					email: req.body.email
+				}
+			});
+			console.log(value);
 
 			return res.status(200).send({
 				data
 			});
 		} catch (error) {
+			if (typeof error.code === 'string') {
+				error.code = 500;
+			}
+
 			return next(error);
 		}
 	};
