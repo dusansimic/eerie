@@ -62,6 +62,12 @@ const routine = async function () {
 		debug: env.debug,
 		secret: env.secret,
 		options: {
+			time: {
+				registerTokenTime: 120,
+				registerRepeatTime: 2,
+				passwordTokenTime: 30,
+				passwordRepeatTime: 2
+			},
 			roles: {
 				// DefaultRole: 0,
 				adminRoles: [1],
@@ -69,6 +75,7 @@ const routine = async function () {
 					1: [0]
 				}
 			},
+			// InstantRegistration: false,
 			loginAfterRegister: env.options.loginAfterRegister,
 			passwordMethod: env.options.passwordMethod
 		},

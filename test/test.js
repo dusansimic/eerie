@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 const Redis = require('ioredis');
 const request = require('supertest');
+const nodemailer = require('nodemailer');
 
 const eerie = require('../eerie');
 const loggerProvider = require('../modules/logger-provider');
@@ -24,10 +25,21 @@ const redis = new Redis({
 	tls: env.redis.ssl
 });
 
+const transporterConfig = {
+	auth: {
+		user: env.nodemailer.username,
+		pass: env.nodemailer.password
+	}
+};
+
 const config = {
 	debug: env.debug,
 	secret: env.secret,
 	options: {
+		time: {
+			registerTokenTime: 120,
+			passwordTokenTime: 30
+		},
 		roles: {
 			// DefaultRole: 0,
 			adminRoles: [1],
@@ -35,6 +47,7 @@ const config = {
 				1: [0]
 			},
 		},
+		// instantRegistration: false,
 		loginAfterRegister: env.options.loginAfterRegister,
 		passwordMethod: env.options.passwordMethod
 	},
@@ -52,6 +65,23 @@ let debugUser;
 describe('server testing', function () {
 
 	before('creating the server', async function () {
+		if (env.nodemailer.service === 'gmail') {
+			transporterConfig.service = env.nodemailer.service;
+		} else if (env.nodemailer.service === 'ethereal') {
+			const testData = await nodemailer.createTestAccount();
+			transporterConfig.host = testData.smtp.host;
+			transporterConfig.port = testData.smtp.port;
+			transporterConfig.auth = {
+				user: testData.user,
+				pass: testData.pass
+			};
+		} else {
+			transporterConfig.host = env.nodemailer.host;
+			transporterConfig.port = env.nodemailer.port;
+		}
+
+		config.transporter = nodemailer.createTransport(transporterConfig);
+
 		logger = await loggerProvider('mochaTesting');
 		server = await eerie(config);
 

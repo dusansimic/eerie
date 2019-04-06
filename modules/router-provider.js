@@ -52,8 +52,12 @@ module.exports = async function (methods, config) {
 			Gathering the ip, and creating the object ready to put into the database.
 			(1st middleware)
 		 */
+
 		let ip = req.connection.remoteAddress;
-		ip = ip.substring(ip.lastIndexOf(':') + 1);
+		if (ip.lastIndexOf(':') !== -1) {
+			ip = ip.substring(ip.lastIndexOf(':') + 1);
+		}
+
 		if (ip.split('.').length !== 4) {
 			ip = '127.0.0.1';
 		}

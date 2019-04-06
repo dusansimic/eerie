@@ -1,4 +1,6 @@
+const jwt = require('jsonwebtoken');
 const HttpError = require('../http-error');
+const RegisterRequest = require('../../data/register-request');
 
 module.exports = (methods, config) => {
 	/*
@@ -25,6 +27,9 @@ module.exports = (methods, config) => {
 
 			const data = {};
 
+			/*
+				Part where we find out the role of the new account.
+			 */
 			if (req.account) {
 				if (config.isDebugUser(req.account.id, req.account.password)) {
 					data.role = req.body.role || 0;
@@ -36,7 +41,9 @@ module.exports = (methods, config) => {
 						return next({code: 403, message: 'You are not permitted to create an account!'});
 					}
 
-					if (!roles.includes(req.body.role)) {
+					if (!req.body.role) {
+						data.role = roles[0];
+					} else if (!roles.includes(req.body.role)) {
 						return next({code: 403, message: 'You are not permitted to create an account with that role!'});
 					}
 
@@ -50,17 +57,99 @@ module.exports = (methods, config) => {
 				data.role = config.options.roles.defaultRole;
 			}
 
-			const value = await config.transporter.sendMail({
+			/*
+				We need to look up the already existing requests.
+				If there is one, check if it was sent in last X minutes. If yes, say boohoo.
+				If no, send it again.
+				If there is no one, create a new one, record it in the database, and send it.
+			 */
+			const requests = await methods.registerRequests.findByEmail(req.body.email);
+			const request = requests[0].dataValues ? requests[0].dataValues : null;
+			const now = new Date();
+
+			if (request.dateCreation < now && now < request.dateExpiry) {
+				const seconds = (now - request.dateLastSent) / 1000;
+				/*
+					This is if there already is one that still hasn't expired.
+				 */
+				if (!(seconds > (config.options.time.registerRepeatTime * 60))) {
+					return res.status(400).send({
+						message: 'You already sent a request in past ' + config.options.time.registerRepeatTime + ' minutes.'
+					});
+				}
+
+				/*
+					We update the one already existing, and send it.
+				 */
+
+				requests[0].dateLastSent = new Date();
+				await methods.registerRequests.update(requests[0]);
+
+				const email = await config.transporter.sendMail({
+					to: request.email,
+					subject: 'Account registration',
+					template: 'register',
+					ctx: {
+						email: request.email,
+						link: 'http://' + (req.headers.origin || request.ip) + '/register?token=' + request.token
+					}
+				});
+
+				if (!email.accepted.includes(request.email)) {
+					return res.status(400).send({
+						message: 'Email wasn\'t sent.'
+					});
+				}
+
+				return res.status(200).send({
+					message: 'Successfully sent an email.'
+				});
+			}
+
+			/*
+				Creation of a new request. We need a new token.
+			 */
+			data.email = req.body.email;
+			data.ip = req.ip;
+			if (data.ip.lastIndexOf(':') !== -1) {
+				data.ip = data.ip.substring(data.ip.lastIndexOf(':') + 1);
+			}
+
+			data.dateCreation = new Date();
+			data.dateExpiry = new Date(Date.now() + (1000 * 60 * config.options.time.registerTokenTime));
+			data.dateLastSent = new Date();
+
+			const token = jwt.sign({
+				email: data.email,
+				ip: data.ip,
+				dateCreation: data.dateCreation,
+				dateExpiry: data.dateExpiry
+			}, config.secret);
+			data.token = token;
+
+			await methods.registerRequests.create(RegisterRequest.createFromObject(data));
+
+			/*
+				And sending the email.
+			 */
+			const email = await config.transporter.sendMail({
 				to: req.body.email,
+				subject: 'Account registration',
 				template: 'register',
 				ctx: {
-					email: req.body.email
+					email: req.body.email,
+					link: 'http://' + (req.headers.origin || data.ip) + '/register?token=' + token
 				}
 			});
-			console.log(value);
+
+			if (!email.accepted.includes(req.body.email)) {
+				return res.status(400).send({
+					message: 'Email wasn\'t sent.'
+				});
+			}
 
 			return res.status(200).send({
-				data
+				message: 'Successfully sent an email.'
 			});
 		} catch (error) {
 			if (typeof error.code === 'string') {

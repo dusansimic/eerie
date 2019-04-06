@@ -19,9 +19,20 @@ module.exports = (Sequelize, DataTypes) => {
 			type: DataTypes.INTEGER,
 			defaultValue: 0
 		},
+		ip: {
+			type: DataTypes.STRING,
+			validate: {
+				isIP: true
+			}
+		},
+		used: {
+			type: DataTypes.BOOLEAN,
+			default: false
+		},
 		dateCreation: DataTypes.DATE,
 		dateExpiry: DataTypes.DATE,
-		token: DataTypes.STRING
+		dateLastSent: DataTypes.DATE,
+		token: DataTypes.STRING(500) // eslint-disable-line new-cap
 	}, {
 		timestamps: true
 	});

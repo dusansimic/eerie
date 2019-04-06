@@ -71,6 +71,9 @@ module.exports = async function (sequelize) {
 				where: {ip},
 				order: [['createdAt', 'DESC']]
 			}),
+			update: async request => {
+				return await request.save();
+			},
 			create: async registerRequest => await RegisterRequests.create(registerRequest)
 		},
 		requests: {
