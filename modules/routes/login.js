@@ -56,8 +56,8 @@ module.exports = (methods, config) => {
 			}
 
 			if (config.options.passwordMethod === 'SHA256') {
-				if (req.body.password !== account.password &&
-					(crypto.createHash('sha256').update(req.body.password, 'utf8').digest('hex') !== account.password)) {
+				if (req.body.password === account.password ||
+					(crypto.createHash('sha256').update(req.body.password, 'utf8').digest('hex') === account.password)) {
 					/*
 						If there appears to be a id/false loginAttempt
 						That means someone tried to login, but entered a wrong password.

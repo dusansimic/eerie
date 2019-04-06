@@ -69,8 +69,7 @@ const filterRegisterTokenCheck = (req, res, next) => {
 
 const filterRegisterFinish = (req, res, next) => {
 	try {
-		bodyContains(req.body, ['token', 'username', 'password'], false);
-		checkType(req.body.token, 'string');
+		bodyContains(req.body, ['username', 'password'], false);
 		checkType(req.body.username, 'string');
 		checkType(req.body.password, 'string');
 		return next();

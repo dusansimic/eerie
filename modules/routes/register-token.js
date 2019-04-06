@@ -25,6 +25,10 @@ module.exports = (methods, config) => {
 				Check right away, if non-logged-in users are at all able to create accounts.
 			 */
 
+			if (config.options.instantRegistration) {
+				return next({code: 401, message: 'Instant Registration is on, no tokens.'});
+			}
+
 			const data = {};
 
 			/*
@@ -41,13 +45,18 @@ module.exports = (methods, config) => {
 						return next({code: 403, message: 'You are not permitted to create an account!'});
 					}
 
-					if (!req.body.role) {
+					if (req.body.role) {
+						data.role = req.body.role;
+					} else {
 						data.role = roles[0];
-					} else if (!roles.includes(req.body.role)) {
-						return next({code: 403, message: 'You are not permitted to create an account with that role!'});
 					}
 
-					data.role = req.body.role;
+					if (!roles.includes(data.role)) {
+						return next({
+							code: 403,
+							message: 'You are not permitted to create an account with that role!'
+						});
+					}
 				}
 			} else {
 				if (!config.options.roles.defaultRole) {
@@ -64,10 +73,10 @@ module.exports = (methods, config) => {
 				If there is no one, create a new one, record it in the database, and send it.
 			 */
 			const requests = await methods.registerRequests.findByEmail(req.body.email);
-			const request = requests[0].dataValues ? requests[0].dataValues : null;
+			const request = requests[0] ? requests[0].dataValues : null;
 			const now = new Date();
 
-			if (request.dateCreation < now && now < request.dateExpiry) {
+			if (request && !request.used && (request.dateCreation < now && now < request.dateExpiry)) {
 				const seconds = (now - request.dateLastSent) / 1000;
 				/*
 					This is if there already is one that still hasn't expired.
@@ -110,6 +119,17 @@ module.exports = (methods, config) => {
 				Creation of a new request. We need a new token.
 			 */
 			data.email = req.body.email;
+
+			/*
+				We need a check, if the email already has account about it.
+			 */
+			const account = await methods.account.findByIdentification(req.body.email);
+			if (account) {
+				return res.status(400).send({
+					message: 'There already is an account with that email address.'
+				});
+			}
+
 			data.ip = req.ip;
 			if (data.ip.lastIndexOf(':') !== -1) {
 				data.ip = data.ip.substring(data.ip.lastIndexOf(':') + 1);
@@ -120,6 +140,7 @@ module.exports = (methods, config) => {
 			data.dateLastSent = new Date();
 
 			const token = jwt.sign({
+				role: data.role,
 				email: data.email,
 				ip: data.ip,
 				dateCreation: data.dateCreation,

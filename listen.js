@@ -75,7 +75,7 @@ const routine = async function () {
 					1: [0]
 				}
 			},
-			// InstantRegistration: false,
+			instantRegistration: true,
 			loginAfterRegister: env.options.loginAfterRegister,
 			passwordMethod: env.options.passwordMethod
 		},

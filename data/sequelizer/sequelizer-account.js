@@ -7,7 +7,6 @@ const methods = require('./sequelizer-method');
 // This is pretty much the type Account, adapted for Sequelize
 module.exports = (Sequelize, DataTypes) => {
 	let hashFunction;
-	let hashing;
 
 	switch (env.options.passwordMethod) {
 		case 'bcrypt':
@@ -17,9 +16,8 @@ module.exports = (Sequelize, DataTypes) => {
 
 			break;
 		case 'SHA256':
-			hashing = crypto.createHash('sha256');
 			hashFunction = value => {
-				return hashing.update(value, 'utf8').digest('hex');
+				return crypto.createHash('sha256').update(value, 'utf8').digest('hex');
 			};
 
 			break;
@@ -37,12 +35,14 @@ module.exports = (Sequelize, DataTypes) => {
 		},
 		username: {
 			type: DataTypes.STRING,
+			unique: true,
 			validate: {
 				isAlphanumeric: true
 			}
 		},
 		email: {
 			type: DataTypes.STRING,
+			unique: true,
 			validate: {
 				isEmail: true
 			},
