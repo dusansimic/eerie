@@ -94,7 +94,7 @@ module.exports = (methods, config) => {
 				requests[0].dateLastSent = new Date();
 				await methods.registerRequests.update(requests[0]);
 
-				const email = await config.transporter.sendMail({
+				const email = await config.nodemailer.sendMail({
 					to: request.email,
 					subject: 'Account registration',
 					template: 'register',
@@ -153,7 +153,7 @@ module.exports = (methods, config) => {
 			/*
 				And sending the email.
 			 */
-			const email = await config.transporter.sendMail({
+			const email = await config.nodemailer.sendMail({
 				to: req.body.email,
 				subject: 'Account registration',
 				template: 'register',

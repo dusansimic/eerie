@@ -1,7 +1,4 @@
-const Sequelize = require('sequelize');
-const Redis = require('ioredis');
 const request = require('supertest');
-const nodemailer = require('nodemailer');
 
 const eerie = require('../eerie');
 const loggerProvider = require('../modules/logger-provider');
@@ -64,7 +61,7 @@ let server;
 let cookie;
 let debugUser;
 
-describe('server testing', function () {
+describe('debug server testing', function () {
 
 	before('creating the server', async function () {
 		logger = await loggerProvider('mochaTesting');
@@ -77,7 +74,7 @@ describe('server testing', function () {
 		});
 	});
 
-	it('should just get GET /me', function (done) {
+	it('GET /me - first pass', function (done) {
 		request(server)
 			.get('/me')
 			.set('Accept', 'application/json')
@@ -99,7 +96,7 @@ describe('server testing', function () {
 			});
 	});
 
-	it('we can try to get it again, but now we have a cookie GET /me', function (done) {
+	it('GET /me - taking cookie', function (done) {
 		request(server)
 			.get('/me')
 			.set('Accept', 'application/json')
@@ -121,7 +118,7 @@ describe('server testing', function () {
 			});
 	});
 
-	it('now we attempt to login, and see what happens POST /login', function (done) {
+	it('POST /login - login as debug user', function (done) {
 		logger.debug(debugUser);
 		request(server)
 			.post('/login')
@@ -145,7 +142,7 @@ describe('server testing', function () {
 			});
 	});
 
-	it('now since we\'re logged in, we\'ll GET /me', function (done) {
+	it('GET /me - third pass, debug user', function (done) {
 		request(server)
 			.get('/me')
 			.set('Accept', 'application/json')
@@ -166,6 +163,110 @@ describe('server testing', function () {
 				logger.debug(res.body);
 				done();
 			});
+	});
+
+	let token;
+
+	describe('creating an account - creating a token', function () {
+		it('POST /register/token - gathering a token', function (done) {
+			request(server)
+				.post('/register/token')
+				.set('Accept', 'application/json')
+				.set('Cookie', cookie)
+				.send({
+					'email': config.nodemailer.options.auth.user
+				})
+				.expect('Content-type', /json/)
+				.expect(200)
+				.end(function (err, res) {
+					if (err) {
+						logger.error(err.message);
+						logger.trace(err);
+						return done(err);
+					}
+					logger.debug('message : ' + res.body.message);
+					done();
+				});
+		}).timeout(3000);
+
+		after('get the token', async () => {
+			let tokens = await server.methods.registerRequests.findAll();
+			tokens.forEach(instance => {
+				if (instance.email.indexOf('@ethereal.email') !== -1) {
+					token = instance.token;
+				}
+			})
+		});
+	});
+
+	describe('creating an account - creating the account', function () {
+		it('POST /register/valid - checking if the token is still fine', function (done) {
+			request(server)
+				.post('/register/valid')
+				.set('Accept', 'application/json')
+				.set('Cookie', cookie)
+				.send({
+					token
+				})
+				.expect('Content-type', /json/)
+				.expect(200)
+				.end(function (err, res) {
+					if (err) {
+						logger.error(err.message);
+						logger.trace(err);
+						return done(err);
+					}
+					if (res.headers['set-cookie']) {
+						return done('Received a cookie, where I should already have one!');
+					}
+					logger.debug('message : ' + res.body.message);
+					done();
+				});
+		});
+
+		it('POST /register/final - creating the account', function (done) {
+			request(server)
+				.post('/register/final')
+				.set('Accept', 'application/json')
+				.set('Cookie', cookie)
+				.send({
+					token,
+					username: debugUser.id,
+					password: debugUser.password
+				})
+				.expect('Content-type', /json/)
+				.expect(200)
+				.end(function (err, res) {
+					if (err) {
+						logger.error(err.message);
+						logger.trace(err);
+						return done(err);
+					}
+					if (res.headers['set-cookie']) {
+						return done('Received a cookie, where I should already have one!');
+					}
+					logger.debug('message : ' + res.body.message);
+					done();
+				});
+		});
+
+		after('delete users', async () => {
+			const users = await server.methods.account.findAll();
+			users.forEach(async user => {
+				if (user.email.indexOf('@ethereal.email') !== -1) {
+					await server.methods.account.delete(user);
+				}
+			});
+		});
+
+		after('delete tokens', async () => {
+			const tokens = await server.methods.registerRequests.findAll();
+			tokens.forEach(async token => {
+				if (token.email.indexOf('@ethereal.email') !== -1) {
+					await server.methods.registerRequests.delete(token);
+				}
+			});
+		});
 	});
 
 	after('stop tests', () => {

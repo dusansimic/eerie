@@ -16,18 +16,20 @@ module.exports = async function (sequelize) {
 
 	return {
 		account: {
-			findAll: async () => await Accounts.findAll({raw: true}),
+			findAll: async () => await Accounts.findAll(),
 			findById: async id => await Accounts.findOne({
-				where: {id},
-				raw: true
+				where: {id}
 			}),
 			findByIdentification: async identification => await Accounts.findOne({
 				where: {[Op.or]: [{username: identification}, {email: identification}]}
 			}),
-			create: async account => await Accounts.create(account)
+			create: async account => await Accounts.create(account),
+			delete: async account => {
+				return await account.destroy();
+			}
 		},
 		bans: {
-			findAll: async () => await Bans.findAll({raw: true}),
+			findAll: async () => await Bans.findAll(),
 			findByUser: async id => await Bans.findOne({
 				where: {user: id},
 				order: [['createdAt', 'DESC']]
@@ -35,7 +37,7 @@ module.exports = async function (sequelize) {
 			create: async ban => await Bans.create(ban)
 		},
 		ipBans: {
-			findAll: async () => await IpBans.findAll({raw: true}),
+			findAll: async () => await IpBans.findAll(),
 			findByIp: async ip => await IpBans.findOne({
 				where: {ip},
 				order: [['createdAt', 'DESC']]
@@ -43,7 +45,7 @@ module.exports = async function (sequelize) {
 			create: async ipBan => await IpBans.create(ipBan)
 		},
 		loginAttempts: {
-			findAll: async () => await LoginAttempts.findAll({raw: true}),
+			findAll: async () => await LoginAttempts.findAll(),
 			findByUser: async id => await LoginAttempts.findAll({
 				where: {user: id},
 				order: [['createdAt', 'DESC']]
@@ -51,7 +53,7 @@ module.exports = async function (sequelize) {
 			create: async loginAttempt => await LoginAttempts.create(loginAttempt)
 		},
 		passwordRequests: {
-			findAll: async () => await PasswordRequests.findAll({raw: true}),
+			findAll: async () => await PasswordRequests.findAll(),
 			findByUser: async id => await PasswordRequests.findAll({
 				where: {user: id},
 				order: [['createdAt', 'DESC']]
@@ -59,7 +61,7 @@ module.exports = async function (sequelize) {
 			create: async passwordRequest => await PasswordRequests.create(passwordRequest)
 		},
 		registerRequests: {
-			findAll: async () => await RegisterRequests.findAll({raw: true}),
+			findAll: async () => await RegisterRequests.findAll(),
 			findByToken: async token => await RegisterRequests.findOne({
 				where: {token}
 			}),
@@ -74,10 +76,13 @@ module.exports = async function (sequelize) {
 			update: async request => {
 				return await request.save();
 			},
-			create: async registerRequest => await RegisterRequests.create(registerRequest)
+			create: async registerRequest => await RegisterRequests.create(registerRequest),
+			delete: async request => {
+				return await request.destroy();
+			}
 		},
 		requests: {
-			findAll: async () => await Requests.findAll({raw: true}),
+			findAll: async () => await Requests.findAll(),
 			findByIp: async ip => await Requests.findAll({
 				where: {ip},
 				order: [['createdAt', 'DESC']]
