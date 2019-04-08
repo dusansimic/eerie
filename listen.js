@@ -1,7 +1,3 @@
-const Sequelize = require('sequelize');
-const Redis = require('ioredis');
-const nodemailer = require('nodemailer');
-
 const eerie = require('./eerie');
 const env = require('./modules/environment-variables');
 
@@ -14,7 +10,7 @@ const routine = async function () {
 		This is how you initialize the library, with some options, debug switch
 		And the sequelize/mongoose connection, and redis connection
 	 */
-	const sequelize = new Sequelize({
+	const sequelizeConfig = {
 		host: env.sequelize.host,
 		username: env.sequelize.authenticationData.username,
 		password: env.sequelize.authenticationData.password,
@@ -23,40 +19,22 @@ const routine = async function () {
 		dialectOptions: {
 			encrypt: env.sequelize.encrypt
 		}
-	});
+	};
 
-	const redis = new Redis({
+	const redisConfig = {
 		host: env.redis.host,
 		password: env.redis.password,
 		port: env.redis.ssl ? 6380 : 6379,
 		tls: env.redis.ssl
-	});
-
-	const transporterConfig = {
-		auth: {
-			user: env.nodemailer.username,
-			pass: env.nodemailer.password
-		}
 	};
 
-	if (env.nodemailer.service === 'gmail') {
-		transporterConfig.service = env.nodemailer.service;
-	} else if (env.nodemailer.service === 'ethereal') {
-		const testData = await nodemailer.createTestAccount();
-		transporterConfig.host = testData.smtp.host;
-		transporterConfig.port = testData.smtp.port;
-		transporterConfig.auth = {
-			user: testData.user,
-			pass: testData.pass
-		};
-	} else {
-		transporterConfig.host = env.nodemailer.host;
-		transporterConfig.port = env.nodemailer.port;
-	}
-
-	// Logger.debug(transporterConfig.auth);
-
-	const transporter = nodemailer.createTransport(transporterConfig);
+	const nodemailerConfig = {
+		service: env.nodemailer.service,
+		host: env.nodemailer.host,
+		port: env.nodemailer.port,
+		username: env.nodemailer.username,
+		password: env.nodemailer.password
+	};
 
 	const server = await eerie({
 		debug: env.debug,
@@ -79,9 +57,9 @@ const routine = async function () {
 			loginAfterRegister: env.options.loginAfterRegister,
 			passwordMethod: env.options.passwordMethod
 		},
-		sequelize,
-		redis,
-		transporter
+		sequelizeConfig,
+		redisConfig,
+		nodemailerConfig
 	});
 
 	server.listen(port, () => {

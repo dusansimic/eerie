@@ -7,7 +7,7 @@ const eerie = require('../eerie');
 const loggerProvider = require('../modules/logger-provider');
 const env = require('../modules/environment-variables');
 
-const sequelize = new Sequelize({
+const sequelizeConfig = {
 	host: env.sequelize.host,
 	username: env.sequelize.authenticationData.username,
 	password: env.sequelize.authenticationData.password,
@@ -16,20 +16,21 @@ const sequelize = new Sequelize({
 	dialectOptions: {
 		encrypt: env.sequelize.encrypt
 	}
-});
+};
 
-const redis = new Redis({
+const redisConfig = {
 	host: env.redis.host,
 	password: env.redis.password,
 	port: env.redis.ssl ? 6380 : 6379,
 	tls: env.redis.ssl
-});
+};
 
-const transporterConfig = {
-	auth: {
-		user: env.nodemailer.username,
-		pass: env.nodemailer.password
-	}
+const nodemailerConfig = {
+	service: env.nodemailer.service,
+	host: env.nodemailer.host,
+	port: env.nodemailer.port,
+	username: env.nodemailer.username,
+	password: env.nodemailer.password
 };
 
 const config = {
@@ -51,8 +52,9 @@ const config = {
 		loginAfterRegister: env.options.loginAfterRegister,
 		passwordMethod: env.options.passwordMethod
 	},
-	sequelize,
-	redis
+	sequelizeConfig,
+	redisConfig,
+	nodemailerConfig
 };
 
 const port = 1908;
@@ -65,23 +67,6 @@ let debugUser;
 describe('server testing', function () {
 
 	before('creating the server', async function () {
-		if (env.nodemailer.service === 'gmail') {
-			transporterConfig.service = env.nodemailer.service;
-		} else if (env.nodemailer.service === 'ethereal') {
-			const testData = await nodemailer.createTestAccount();
-			transporterConfig.host = testData.smtp.host;
-			transporterConfig.port = testData.smtp.port;
-			transporterConfig.auth = {
-				user: testData.user,
-				pass: testData.pass
-			};
-		} else {
-			transporterConfig.host = env.nodemailer.host;
-			transporterConfig.port = env.nodemailer.port;
-		}
-
-		config.transporter = nodemailer.createTransport(transporterConfig);
-
 		logger = await loggerProvider('mochaTesting');
 		server = await eerie(config);
 

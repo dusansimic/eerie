@@ -6,6 +6,9 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const uuid = require('uuid');
 const morgan = require('morgan');
+const Sequelize = require('sequelize');
+const Redis = require('ioredis');
+const nodemailer = require('nodemailer');
 
 const loggerProvider = require('./modules/logger-provider');
 
@@ -16,6 +19,33 @@ module.exports = async function (config) {
 	 */
 	const logger = await loggerProvider('httpServer');
 	await require('./modules/config-analyzer')(config);
+
+	config.sequelize = new Sequelize(config.sequelizeConfig);
+	config.redis = new Redis(config.redisConfig);
+
+	const transporterConfig = {
+		auth: {
+			user: config.nodemailerConfig.username,
+			pass: config.nodemailerConfig.password
+		}
+	};
+
+	if (config.nodemailerConfig.service === 'gmail') {
+		transporterConfig.service = config.nodemailerConfig.service;
+	} else if (config.nodemailerConfig.service === 'ethereal') {
+		const testData = await nodemailer.createTestAccount();
+		transporterConfig.host = testData.smtp.host;
+		transporterConfig.port = testData.smtp.port;
+		transporterConfig.auth = {
+			user: testData.user,
+			pass: testData.pass
+		};
+	} else {
+		transporterConfig.host = config.nodemailerConfig.host;
+		transporterConfig.port = config.nodemailerConfig.port;
+	}
+
+	config.nodemailer = nodemailer.createTransport(transporterConfig);
 
 	const application = express();
 

@@ -16,7 +16,7 @@ module.exports = async function (methods, config) {
 	const filters = require('./router-filters');
 	const limiters = await require('./router-limiters')(config);
 
-	config.transporter.use('compile', pugEngine({
+	config.nodemailer.use('compile', pugEngine({
 		templateDir: path.join(__dirname, '../templates'),
 		pretty: true
 	}));
