@@ -15,6 +15,15 @@ module.exports = async function (sequelize) {
 	sequelize.sync();
 
 	return {
+		extra: {
+			Accounts,
+			Bans,
+			IpBans,
+			LoginAttempts,
+			PasswordRequests,
+			RegisterRequests,
+			Requests
+		},
 		account: {
 			findAll: async () => await Accounts.findAll(),
 			findById: async id => await Accounts.findOne({
