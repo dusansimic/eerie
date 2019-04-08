@@ -199,7 +199,7 @@ module.exports = async function (methods, config) {
 
 	if (config.debug) {
 		router.get('/debug', async (req, res, _) => {
-			const auth = await config.transporter.options.auth;
+			const {auth} = config.nodemailer.options;
 
 			return res.render('debug', {
 				debugUser: config.debugUser,
