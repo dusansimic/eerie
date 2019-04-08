@@ -21,7 +21,7 @@ module.exports = (methods, config) => {
 			if (config.options.instantRegistration) {
 				account.username = req.body.username;
 				account.password = req.body.password;
-				if (!config.options.roles.defaultValue) {
+				if (!(config.options.roles.defaultValue || config.options.roles.defaultValue === 0)) {
 					throw new Error('You did not set a defaultValue, which has to be set if instantRegistration is true.');
 				}
 
