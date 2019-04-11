@@ -91,6 +91,12 @@ module.exports = async function (config) {
 		application.debugUser = router.debugUser;
 	}
 
+	if (config.noLoginRouters) {
+		config.noLoginRouters.forEach(routerConfig => {
+			application.use(routerConfig.path, routerConfig.router(methods, config));
+		});
+	}
+
 	application.use('/', router);
 
 	application.use((err, req, res, next) => {
