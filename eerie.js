@@ -93,7 +93,7 @@ module.exports = async function (config) {
 
 	if (config.noLoginRouters) {
 		config.noLoginRouters.forEach(routerConfig => {
-			application.use(routerConfig.path, routerConfig.router(methods, config));
+			application.use(routerConfig.path, routerConfig.router(methods.extra, config));
 		});
 	}
 
