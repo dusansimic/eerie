@@ -70,8 +70,9 @@ describe('debug server testing', function () {
 		logger = await loggerProvider('mochaTesting');
 		instance = await eerie(config);
 
+		debugUser = instance.application.debugUser;
+
 		server = await instance.start();
-		debugUser = server.debugUser;
 
 		server.listen(port, () => {
 			logger.debug('Test server is up on ' + port + '.');
@@ -123,7 +124,6 @@ describe('debug server testing', function () {
 	});
 
 	it('POST /login - login as debug user', function (done) {
-		logger.debug(debugUser);
 		request(server)
 			.post('/login')
 			.set('Cookie', cookie)
