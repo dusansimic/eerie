@@ -47,10 +47,12 @@ module.exports = async function (config) {
 
 	config.nodemailer = nodemailer.createTransport(transporterConfig);
 
-	const application = express();
+	if (!config.application) {
+		config.application = express();
+	}
 
-	application.set('views', path.join(__dirname, 'views'));
-	application.set('view engine', 'pug');
+	config.application.set('views', path.join(__dirname, 'views'));
+	config.application.set('view engine', 'pug');
 
 	/*
 		All the middleware necessary
@@ -60,20 +62,20 @@ module.exports = async function (config) {
 		Fourth, the everyone's whisperer
 		And fifth, the router who connects everyone...
 	*/
-	application.use(cors({
+	config.application.use(cors({
 		origin(origin, callback) {
 			callback(null, true);
 		},
 		credentials: true
 	}));
 
-	application.use(bodyParser.json());
+	config.application.use(bodyParser.json());
 
 	if (config.debug) {
-		application.use(morgan('dev'));
+		config.application.use(morgan('dev'));
 	}
 
-	application.use(session({
+	config.application.use(session({
 		reqid: uuid,
 		secret: config.secret,
 		store: new RedisStore({
@@ -86,20 +88,20 @@ module.exports = async function (config) {
 	const methods = await require('./modules/sequelize-methods')(config.sequelize);
 	const router = await require('./modules/router-provider')(methods, config);
 
-	application.methods = methods;
+	config.application.methods = methods;
 	if (config.debug) {
-		application.debugUser = router.debugUser;
+		config.application.debugUser = router.debugUser;
 	}
 
 	if (config.noLoginRouters) {
 		config.noLoginRouters.forEach(routerConfig => {
-			application.use(routerConfig.path, routerConfig.router(methods.extra, config));
+			config.application.use(routerConfig.path, routerConfig.router(methods.extra, config));
 		});
 	}
 
-	application.use('/', router);
+	config.application.use('/', router);
 
-	application.use((err, req, res, next) => {
+	config.application.use((err, req, res, next) => {
 		if (next) {
 			next();
 		}
@@ -112,5 +114,5 @@ module.exports = async function (config) {
 		});
 	});
 
-	return application;
+	return config.application;
 };

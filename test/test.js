@@ -1,4 +1,5 @@
 const request = require('supertest');
+const express = require('express');
 
 const eerie = require('../eerie');
 const loggerProvider = require('../modules/logger-provider');
@@ -33,6 +34,7 @@ const nodemailerConfig = {
 const config = {
 	debug: env.debug,
 	secret: env.secret,
+	application: express(),
 	options: {
 		time: {
 			registerTokenTime: 120,
