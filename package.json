@@ -1,6 +1,6 @@
 {
   "name": "eerie",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "A library that handles user authentication. Provides an API with login/register/password reset requests. Plunks in a database.",
   "main": "eerie.js",
   "scripts": {
