@@ -36,7 +36,7 @@ const routine = async function () {
 		password: env.nodemailer.password
 	};
 
-	const server = await eerie({
+	const instance = await eerie({
 		debug: env.debug,
 		secret: env.secret,
 		options: {
@@ -62,7 +62,9 @@ const routine = async function () {
 		nodemailerConfig
 	});
 
-	server.listen(port, () => {
+	const application = await instance.start();
+
+	application.listen(port, () => {
 		logger.info('Server is running on ' + port + '.');
 	});
 };

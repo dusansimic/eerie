@@ -12,7 +12,7 @@ const nodemailer = require('nodemailer');
 
 const loggerProvider = require('./modules/logger-provider');
 
-module.exports = async function (config) {
+const Eerie = async function (config) {
 	/*
 		Initializing some basics to create the server.
 		If there is also something wrong with the config, throw an Error
@@ -86,22 +86,9 @@ module.exports = async function (config) {
 	}));
 
 	const methods = await require('./modules/sequelize-methods')(config.sequelize);
-	const router = await require('./modules/router-provider')(methods, config);
-
 	config.application.methods = methods;
-	if (config.debug) {
-		config.application.debugUser = router.debugUser;
-	}
 
-	if (config.noLoginRouters) {
-		config.noLoginRouters.forEach(routerConfig => {
-			config.application.use(routerConfig.path, routerConfig.router(methods.extra, config));
-		});
-	}
-
-	config.application.use('/', router);
-
-	config.application.use((err, req, res, next) => {
+	const defaultErrorHandler = (err, req, res, next) => {
 		if (next) {
 			next();
 		}
@@ -112,7 +99,25 @@ module.exports = async function (config) {
 			message: err.message || 'Unexpected error occured.',
 			error: err
 		});
-	});
+	};
 
-	return config.application;
+	return {
+		models: methods.extra,
+		defaultErrorHandler,
+		async start() {
+			const router = await require('./modules/router-provider')(config.application.methods, config);
+
+			if (config.debug) {
+				config.application.debugUser = router.debugUser;
+			}
+
+			config.application.use('/', router);
+
+			config.application.use(defaultErrorHandler);
+
+			return config.application;
+		}
+	};
 };
+
+module.exports = Eerie;

@@ -59,6 +59,7 @@ const config = {
 const port = 1908;
 
 let logger;
+let instance;
 let server;
 let cookie;
 let debugUser;
@@ -67,8 +68,9 @@ describe('debug server testing', function () {
 
 	before('creating the server', async function () {
 		logger = await loggerProvider('mochaTesting');
-		server = await eerie(config);
+		instance = await eerie(config);
 
+		server = await instance.start();
 		debugUser = server.debugUser;
 
 		server.listen(port, () => {
