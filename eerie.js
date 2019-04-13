@@ -168,7 +168,7 @@ const eerie = async function (config) {
 				Query the database for the user
 				Or check if the user matches the debugUser
 			 */
-			if (config.isDebugUser(req.session.token.id, req.session.token.password)) {
+			if (config.debug && config.isDebugUser(req.session.token.id, req.session.token.password)) {
 				/*
 			 		We will return next here, and the event won't be triggered.
 			 		We can't quite database a request for an account that exists
@@ -245,8 +245,10 @@ const eerie = async function (config) {
 				date: new Date(),
 				statusCode: res.statusCode
 			};
-			if (req.session.token && (req.session.token.id !== config.debugUser.id)) {
-				requestEntry.accountId = req.session.token.id;
+			if (req.session.token) {
+				if (!(config.debug && req.session.token.id === config.debugUser.id)) {
+					requestEntry.accountId = req.session.token.id;
+				}
 			}
 
 			// Console.log(requestEntry);
