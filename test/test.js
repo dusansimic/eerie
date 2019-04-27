@@ -19,7 +19,7 @@ const sequelizeConfig = {
 const redisConfig = {
 	host: env.redis.host,
 	password: env.redis.password,
-	port: env.redis.ssl ? 6380 : 6379,
+	port: env.redis.port ? env.redis.port : (env.redis.ssl ? 6380 : 6379),
 	tls: env.redis.ssl
 };
 
@@ -204,6 +204,29 @@ describe('debug server testing', function () {
 	});
 
 	describe('creating an account - creating the account', function () {
+		it('POST /logout - logout to create the account', function (done) {
+			request(server)
+				.post('/logout')
+				.set('Cookie', cookie)
+				.set('Accept', 'application/json')
+				.send({
+					identification: debugUser.id,
+					password: debugUser.password
+				})
+				.expect('Content-type', /json/)
+				.expect(200)
+				.end(function (err, res) {
+					if (err) {
+						logger.error(err.message);
+						logger.trace(err);
+						return done(err);
+					}
+					logger.debug('Logout response body : ');
+					logger.debug(res.body);
+					done();
+				});
+		});
+
 		it('POST /register/valid - checking if the token is still fine', function (done) {
 			request(server)
 				.post('/register/valid')

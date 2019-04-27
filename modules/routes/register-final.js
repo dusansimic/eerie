@@ -55,6 +55,13 @@ module.exports = (methods, config) => {
 				await request.save();
 			}
 
+			if (config.options.loginAfterRegister) {
+				req.session.token = {
+					id: result.id,
+					password: result.password
+				};
+			}
+
 			return res.status(200).send({
 				message: 'Successfully registered ' + result.username + '.'
 			});

@@ -23,6 +23,7 @@ module.exports = {
 	},
 	redis: {
 		host: process.env.EERIE_REDIS_HOST,
+		port: process.env.EERIE_REDIS_PORT,
 		ssl: Boolean(process.env.EERIE_REDIS_SSL),
 		password: process.env.EERIE_REDIS_PASSWORD
 	},

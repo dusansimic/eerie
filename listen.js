@@ -24,7 +24,7 @@ const routine = async function () {
 	const redisConfig = {
 		host: env.redis.host,
 		password: env.redis.password,
-		port: env.redis.ssl ? 6380 : 6379,
+		port: env.redis.port ? env.redis.port : (env.redis.ssl ? 6380 : 6379),
 		tls: env.redis.ssl
 	};
 
@@ -53,7 +53,6 @@ const routine = async function () {
 					1: [0]
 				}
 			},
-			instantRegistration: true,
 			loginAfterRegister: env.options.loginAfterRegister,
 			passwordMethod: env.options.passwordMethod
 		},
