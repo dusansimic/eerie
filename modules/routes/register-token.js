@@ -35,7 +35,7 @@ module.exports = (methods, config) => {
 				Part where we find out the role of the new account.
 			 */
 			if (req.account) {
-				if (config.isDebugUser(req.account.id, req.account.password)) {
+				if (config.debug && config.isDebugUser(req.account.id, req.account.password)) {
 					data.role = req.body.role || 0;
 				} else {
 					const {role} = req.account;
