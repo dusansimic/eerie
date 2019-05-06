@@ -114,7 +114,8 @@ module.exports = (methods, config) => {
 			await methods.loginAttempts.create(LoginAttempt.createFromObject(loginAttempt));
 
 			return res.status(200).send({
-				account: req.session.token
+				id: req.session.token.id,
+				account
 			});
 		} catch (error) {
 			return next(error);

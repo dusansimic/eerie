@@ -63,7 +63,8 @@ module.exports = (methods, config) => {
 			}
 
 			return res.status(200).send({
-				message: 'Successfully registered ' + result.username + '.'
+				message: 'Successfully registered ' + result.username + '.',
+				account: req.session.token ? result : undefined
 			});
 		} catch (error) {
 			if (typeof error.code === 'string') {
