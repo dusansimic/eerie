@@ -47,7 +47,7 @@ const routine = async function () {
 				passwordRepeatTime: 2
 			},
 			roles: {
-				// DefaultRole: 0,
+				// DefaultValue: 0,
 				adminRoles: [1],
 				rolesCreateRoles: {
 					1: [0]

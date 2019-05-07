@@ -59,11 +59,11 @@ module.exports = (methods, config) => {
 					}
 				}
 			} else {
-				if (!config.options.roles.defaultRole) {
+				if (!config.options.roles.defaultValue) {
 					throw new HttpError('Non-logged in users can\'t create accounts!', 400);
 				}
 
-				data.role = config.options.roles.defaultRole;
+				data.role = config.options.roles.defaultValue;
 			}
 
 			/*
