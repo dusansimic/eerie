@@ -64,8 +64,7 @@ No query parameters
 
 No body
 
-| Returns | Case |createdAt: "2019-05-06T18:03:51.832Z",
-    "updatedAt": "2019-05-06T18:03:51.832Z"
+| Returns | Case |
 |---------|------|
 | code: 401, message | You have been logged out (because the password changed). |
 | code: 403, message | You don\'t have permission to do this, or, you have been banned, or, you have been IP banned. |
