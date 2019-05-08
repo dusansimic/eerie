@@ -44,13 +44,28 @@ Password can be either plain text, or hashed password (if you use a hashing pass
 | code: 200, message, account | You are logged in as debug user. |
 | code: 200, id, account | You are logged in. |
 
+Example of account object
+```
+{
+    id: String,
+    username: String,
+    email: String,
+    password: String,
+    role: Number,
+    status: String,
+    createdAt: String (can be parsed into Date with moment for example),
+    updatedAt: String (same as createdAt)
+}
+```
+
 ## POST /logout
 
 No query parameters
 
 No body
 
-| Returns | Case |
+| Returns | Case |createdAt: "2019-05-06T18:03:51.832Z",
+    "updatedAt": "2019-05-06T18:03:51.832Z"
 |---------|------|
 | code: 401, message | You have been logged out (because the password changed). |
 | code: 403, message | You don\'t have permission to do this, or, you have been banned, or, you have been IP banned. |
@@ -67,6 +82,18 @@ No body
 | code: 401, message | You have been logged out (because the password changed). |
 | code: 403, message | You don\'t have permission to do this, or, you have been banned, or, you have been IP banned. |
 | code: 200, id, account | You get the account id, and account information. |
+
+Example of account object
+```
+{
+    username: String,
+    email: String,
+    role: Number,
+    status: String,
+    createdAt: String (can be parsed into Date with moment for example),
+    updatedAt: String (same as createdAt)
+}
+```
 
 ## POST /register/token
 
@@ -137,3 +164,5 @@ And password, also in plain-text. Will be passed through the password method
 | code: 403, message | Your account was banned (if you are logged in), or, Your IP address got banned |
 | code: 404, message | The token you had provided, never existed. |
 | code: 200, message (and maybe account, if loginAfterRegister is true) | You have successfully registered an account. |
+
+Account object (if it exists) looks exactly the same like in POST /login
